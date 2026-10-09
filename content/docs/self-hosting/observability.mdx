@@ -10,7 +10,7 @@ The API and the worker write structured JSON logs (Pino) to stdout. Each line ca
 authorization headers are redacted. `LOG_LEVEL` sets the level (`info` by default).
 
 ```bash
-docker compose -f infra/local/docker-compose.yml --profile platform logs -f api worker
+docker compose --profile platform logs -f api worker
 ```
 
 The correlation id starts at the HTTP request (`x-correlation-id`) and travels into the deployment,

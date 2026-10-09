@@ -21,14 +21,15 @@ Serverless, Bicep and ARM projects. The CLI is written in Rust and licensed unde
 You need Rust 1.88 or newer.
 
 ```bash
-git clone https://github.com/orkstage/orkstage.git
-cd orkstage/cli
+git clone https://github.com/orkstage/orkstage-cli.git
+cd orkstage-cli
 cargo install --path crates/ork-cli --locked
 ork --version
 ```
 
-The CLI lives in the `cli/` folder of the main repository. It moves to its own repository,
-`orkstage-cli`, with the [polyrepo split](/docs/contributing/repository-map/).
+The CLI has its own repository, [`orkstage-cli`](https://github.com/orkstage/orkstage-cli). In
+the [`orkstage-dev`](/docs/contributing/development-setup/) workspace it is the `orkstage-cli/`
+submodule.
 
 </Tab>
 <Tab value="Docker">
@@ -36,7 +37,7 @@ The CLI lives in the `cli/` folder of the main repository. It moves to its own r
 On machines that block unsigned local executables, build and run the Linux binary in containers:
 
 ```bash
-cd cli
+cd orkstage-cli
 docker build -t orkstage/cli-builder:1.99 -f docker/builder.Dockerfile docker
 docker run --rm -v "$PWD:/work" -v orkstage-cargo-registry:/usr/local/cargo/registry \
   -v orkstage-cli-target:/work/target -w /work orkstage/cli-builder:1.99 \

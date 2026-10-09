@@ -16,7 +16,7 @@ depends on, and this page lists them.
 | **Secrets** | `SESSION_SECRET`, `ENCRYPTION_KEY`, the license key and OIDC client secrets | Keep them in your secret store. If you lose `ENCRYPTION_KEY`, the stored webhook signing secrets become unreadable, and you must rotate them. |
 
 ```bash title="example: logical backup of the compose database"
-docker compose -f infra/local/docker-compose.yml exec -T postgres \
+docker compose exec -T postgres \
   pg_dump -U platform -Fc platform > orkstage-$(date +%F).dump
 ```
 
