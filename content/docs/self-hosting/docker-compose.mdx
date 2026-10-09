@@ -3,8 +3,10 @@ title: Docker Compose deployment
 description: Profiles, services, volumes and networks of the OrkStage Compose stack, how the worker starts OpenTofu runners, and what to change before you share it.
 ---
 
-`infra/local/docker-compose.yml` runs the whole platform from one shared image. It is the supported
-way to evaluate OrkStage and the starting point for an installation on a single host.
+`docker-compose.yml` in the [`orkstage-dev`](https://github.com/orkstage/orkstage-dev) workspace
+runs the whole platform from one shared image, built from the repositories checked out as
+submodules. It is the supported way to evaluate OrkStage and the starting point for an
+installation on a single host. Run the commands on this page from the `orkstage-dev` checkout.
 
 ## Profiles
 
@@ -16,7 +18,7 @@ way to evaluate OrkStage and the starting point for an installation on a single 
 | `observability` | An OpenTelemetry collector that prints the telemetry it receives (ports `4317` and `4318`) | |
 
 ```bash
-docker compose -f infra/local/docker-compose.yml --profile platform --profile aws-emulator up -d --build --wait
+docker compose --profile platform --profile aws-emulator up -d --build --wait
 ```
 
 ## Services

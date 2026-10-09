@@ -29,9 +29,12 @@ requirement.** You need no cloud account and no Node.js on the host.
 ### Get the code
 
 ```bash
-git clone https://github.com/orkstage/orkstage.git
-cd orkstage
+git clone --recurse-submodules https://github.com/orkstage/orkstage-dev.git
+cd orkstage-dev
 ```
+
+`orkstage-dev` is the workspace that brings the repositories together as git submodules: the
+control plane, the console, the CLI, the OpenTofu modules and this site.
 
 </Step>
 <Step>
@@ -39,11 +42,10 @@ cd orkstage
 ### Start the stack
 
 ```bash
-docker compose -f infra/local/docker-compose.yml \
-  --profile platform --profile aws-emulator up -d --build --wait
+docker compose --profile platform --profile aws-emulator up -d --build --wait
 ```
 
-The first run builds two images:
+The first run builds two images from the submodules:
 
 - `orkstage/platform:local`, shared by the API, the worker, the console and the `migrate` job.
 - `orkstage/tofu-runner:local`, which contains OpenTofu 1.12.7 and the OpenTofu modules.
@@ -115,30 +117,28 @@ MiniStack. Continue with [Local AWS with MiniStack](/docs/get-started/local-aws/
 
 ```bash
 # follow the platform services
-docker compose -f infra/local/docker-compose.yml --profile platform --profile aws-emulator logs -f api worker web
+docker compose --profile platform --profile aws-emulator logs -f api worker web
 
 # rebuild after code changes
-docker compose -f infra/local/docker-compose.yml --profile platform build
-docker compose -f infra/local/docker-compose.yml --profile platform --profile aws-emulator up -d
+docker compose --profile platform build
+docker compose --profile platform --profile aws-emulator up -d
 
 # stop (volumes are kept; add -v to wipe all data)
-docker compose -f infra/local/docker-compose.yml --profile platform --profile aws-emulator down
+docker compose --profile platform --profile aws-emulator down
 ```
 
 ## Alternative: run the apps on the host
 
 For hot reload during development, run only the infrastructure in Docker. Run the apps on the host
-with Node.js 24 and pnpm 12:
+with Node.js 24 and pnpm 12, from the `orkstage-dev` checkout:
 
 ```bash
-cp .env.example .env
-pnpm install
+pnpm bootstrap                # git hooks, installs and builds
 pnpm local:up                 # Postgres, Redis, Mailpit
-pnpm build
+cp orkstage/.env.example orkstage/.env
 pnpm db:deploy && pnpm db:seed
-pnpm --filter @co/api start   # http://localhost:4000/api/docs
-pnpm --filter @co/worker start
-pnpm --filter @co/web dev     # http://localhost:3000
+pnpm dev                      # API on http://localhost:4000/api/docs and the worker
+pnpm dev:console              # console on http://localhost:3000, in a second terminal
 ```
 
 See [Development setup](/docs/contributing/development-setup/) for details.

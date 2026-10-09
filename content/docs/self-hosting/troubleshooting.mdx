@@ -23,7 +23,7 @@ In production, OrkStage refuses on purpose to start with the dev login, private 
 
 The stack publishes ports `3000`, `4000`, `4566`, `5432`, `6379`, `1025` and `8025`. Stop the process
 that holds the port (often a local Postgres or Redis), or change the left side of the port mapping in
-`infra/local/docker-compose.yml`. If you move `3000` or `4000`, update `WEB_PUBLIC_URL` or
+`docker-compose.yml` in `orkstage-dev`. If you move `3000` or `4000`, update `WEB_PUBLIC_URL` or
 `API_PUBLIC_URL` to match.
 
 </Accordion>
@@ -34,7 +34,7 @@ Desktop, enable the default socket. With rootless Docker or Podman, mount the ma
 
 The containers MiniStack starts join the `cloud-orchestrator_default` network. If you renamed the
 Compose project, update `DOCKER_NETWORK` for MiniStack and `TOFU_DOCKER_NETWORK` for the worker.
-Check the logs with `docker compose -f infra/local/docker-compose.yml logs ministack`.
+Check the logs with `docker compose logs ministack`.
 
 </Accordion>
 <Accordion title="Target validation reports the state bucket as not accessible">
@@ -65,7 +65,7 @@ Compose. Check that:
 - the `TOFU_WORK_VOLUME` and `TOFU_PLUGIN_CACHE_VOLUME` volumes exist
   (`docker volume ls | grep orkstage-tofu`);
 - the runner image is built
-  (`docker compose -f infra/local/docker-compose.yml --profile platform build tofu-runner`).
+  (`docker compose --profile platform build tofu-runner`).
 
 OrkStage kills a command that runs longer than `TOFU_TIMEOUT_MINUTES`.
 

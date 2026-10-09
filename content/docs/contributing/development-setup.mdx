@@ -1,47 +1,73 @@
 ---
 title: Development setup
-description: Build, test and run OrkStage locally with Node.js 24, pnpm 12 and Docker, including the Rust CLI built in a container and this docs site.
+description: Work on OrkStage in its development workspace with Node.js 24, pnpm 12 and Docker, from first checkout to pull request, plus the Rust CLI and this site.
 ---
 
 ## Requirements
 
+- **Git**, with access to the `orkstage` organization.
 - **Node.js 24 or later** and **pnpm 12**. Run `corepack enable` to get the pnpm version pinned in
   `package.json`.
 - **Docker**, for Postgres, Redis, Mailpit, MiniStack and the OpenTofu runner containers.
 - Nothing else for the CLI: its Rust builds run in a container.
 
-## The platform workspace
+## The workspace
 
-The repository is a **pnpm workspace** of `apps/*`, `packages/*` and the committed WebAssembly
-package in `cli/dist/scan-wasm`. It does not use Turborepo: `pnpm -r` already runs scripts in
-dependency order (see [ADR 0006](/docs/contributing/architecture-decisions/#0006-toolchain-choices)).
-All code is ESM TypeScript 7 with `module: NodeNext`.
+OrkStage lives in several repositories. The
+[`orkstage-dev`](https://github.com/orkstage/orkstage-dev) workspace checks them out as git
+submodules and wires them together, so you can change the control plane and the console in one
+place.
 
 ```bash
-cp .env.example .env
-pnpm install
+git clone --recurse-submodules git@github.com:orkstage/orkstage-dev.git
+cd orkstage-dev
+pnpm bootstrap                 # git hooks, installs and builds (core first, then the console)
 pnpm local:up                  # Postgres, Redis, Mailpit
-pnpm build                     # all packages and apps, in dependency order
+cp orkstage/.env.example orkstage/.env
 pnpm db:deploy && pnpm db:seed
-pnpm --filter @co/api start    # http://localhost:4000/api/docs
-pnpm --filter @co/worker start
-pnpm --filter @co/web dev      # http://localhost:3000
+pnpm dev                       # API on http://localhost:4000 and the worker
+pnpm dev:console               # console on http://localhost:3000, in a second terminal
 ```
 
-| Command | What it does |
+How it fits together:
+
+- `orkstage/` (the core) is a normal clone with its own pnpm workspace and lockfile. Inside it,
+  every command works as in a standalone checkout. It does not use Turborepo: `pnpm -r` already
+  runs scripts in dependency order (see
+  [ADR 0006](/docs/contributing/architecture-decisions/#0006-toolchain-choices)). All code is ESM
+  TypeScript 7 with `module: NodeNext`.
+- The workspace root holds the console and the scan engine package. The console's `@orkstage/*`
+  dependencies point to `orkstage/packages` through pnpm overrides, so a change in a shared package
+  reaches the console after `pnpm core:build`, with nothing to publish.
+
+| Command (workspace root) | What it does |
 |---|---|
-| `pnpm build` / `pnpm test` / `pnpm typecheck` | Runs across the workspace, in dependency order. |
-| `pnpm db:migrate` | Creates a migration after you edit `packages/database/prisma/schema.prisma`. |
+| `pnpm bootstrap` | Initializes the submodules, installs the git hooks, installs and builds everything. |
+| `pnpm sync` | Moves every submodule to the latest `main` and reinstalls. |
+| `pnpm status` | Shows the branch and changes of every submodule. |
+| `pnpm build` / `pnpm test` / `pnpm typecheck` | Runs the core, then the console. |
+| `pnpm db:migrate` | Creates a migration after you edit `orkstage/packages/database/prisma/schema.prisma`. |
 | `pnpm db:deploy` / `pnpm db:seed` | Applies migrations, or loads demo data. The seed is idempotent. |
 | `pnpm local:aws` | Starts MiniStack, the local AWS emulator. |
-| `pnpm platform:up` / `platform:logs` / `platform:down` | Starts, follows or stops the full stack in Docker Compose. |
-| `MINISTACK_E2E=1 pnpm --filter @co/cloud-aws test` | Runs the adapter contract tests against MiniStack. |
-| `pnpm format` / `pnpm format:check` | Formats with Prettier, or checks formatting. |
+| `pnpm platform:up` / `platform:logs` / `platform:down` | Builds and runs the full stack in Docker Compose. |
 
-<Callout title="Package names">
-  Workspace packages keep the `@co/*` scope, the working name from before the rebrand, on purpose.
-  They become `@orkstage/*` when the repositories are split.
-</Callout>
+Inside `orkstage/`, `MINISTACK_E2E=1 pnpm --filter @orkstage/cloud-aws test` runs the adapter
+contract tests against MiniStack, and `pnpm format` or `pnpm format:check` runs Prettier.
+
+## Pull requests
+
+Every change reaches `main` through a pull request in the repository that owns the code:
+
+1. Run `pnpm sync` so every submodule is on the latest `main`.
+2. In the submodule you are changing, create a branch, commit and push it, then open a pull
+   request. CI runs on the pull request.
+3. Merge with a squash merge once CI is green. Merged branches are deleted automatically.
+4. When a set of versions works together, commit the new submodule pins in `orkstage-dev`,
+   also through a pull request.
+
+The workspace `pre-push` hook refuses direct pushes to `main` from your machine. On the server,
+rulesets require pull requests and green CI on `main` once the GitHub plan allows them for
+private repositories.
 
 ## Supply chain settings
 
@@ -56,7 +82,7 @@ Development machines may block unsigned native executables. So the CLI is built,
 in containers:
 
 ```bash
-cd cli
+cd orkstage-cli
 docker build -t orkstage/cli-builder:1.99 -f docker/builder.Dockerfile docker
 RUN="docker run --rm -v $PWD:/work -v orkstage-cargo-registry:/usr/local/cargo/registry -v orkstage-cli-target:/work/target -w /work orkstage/cli-builder:1.99"
 $RUN cargo fmt --all --check
@@ -74,11 +100,11 @@ it.
 
 ## This site
 
-The website and docs live in `site/` and move to `orkstage-site` after the split. The site is a
-separate pnpm workspace:
+The website and docs live in the `orkstage-site` repository (`orkstage-site/` in the workspace).
+The site is its own pnpm workspace:
 
 ```bash
-cd site
+cd orkstage-site
 pnpm install
 pnpm dev          # http://localhost:3100
 pnpm build        # static export to out/
