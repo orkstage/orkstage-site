@@ -79,11 +79,33 @@ ORKSTAGE_API_URL=https://api.example.com pnpm openapi:refresh
 - "Edit this page" links point to `github.com/orkstage/orkstage-site/blob/main/content/docs/`.
 - Run `pnpm check:prose` before opening a pull request.
 
-## Deploying
+## Deploying (Hostinger)
 
-The hosting is described in [`infra/main.tf`](infra/main.tf) and has not been applied yet. The
-steps (one time setup, then sync of `out/` and a CloudFront invalidation) are in
-[`infra/README.md`](infra/README.md).
+orkstage.io is served by Hostinger from the `hostinger` branch of this repository. CI builds the
+static export on every push to `main` and, when the build and every check pass, commits `out/` to
+that branch (job `publish-hostinger`). Hostinger pulls the branch into `public_html`.
+[`public/.htaccess`](public/.htaccess) ships with the export and configures the server: HTTPS and
+apex redirects, directory pages, the 404 page, security headers, a year of caching for hashed
+assets and compression.
+
+One time setup in hPanel (Websites > Manage > Advanced > GIT):
+
+1. Empty `public_html` (File Manager), because the first deployment needs an empty directory.
+2. Repository `git@github.com:orkstage/orkstage-site.git`, branch `hostinger`, directory left
+   empty (that is `public_html`). For a private repository, hPanel shows an SSH key: add it to
+   this repository under Settings > Deploy keys, read only.
+3. Create, then press Deploy once.
+4. Turn on auto deployment and copy the webhook URL hPanel shows. Add it to this repository under
+   Settings > Webhooks (content type `application/json`, just the push event). From then on every
+   new commit on `hostinger` deploys by itself.
+5. Point the domain at the site (Hostinger nameservers, or an `A` record to the IP hPanel shows)
+   and enable the free SSL certificate for `orkstage.io` and `www.orkstage.io`.
+
+To deploy by hand, run the CI workflow on `main` from the Actions tab. To roll back, revert the
+change on `main`; the next build deploys the previous content.
+
+The OpenTofu in [`infra/`](infra/) describes an alternative on AWS (S3 and CloudFront); it is not
+applied.
 
 ## Related repositories
 

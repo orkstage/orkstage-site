@@ -31,5 +31,56 @@ jobs:
         with:
           name: site
           path: out/
+          # out/.htaccess configures Hostinger; hidden files are skipped unless asked for.
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
+
+  # Hostinger serves public_html from the `hostinger` branch (hPanel > Advanced > Git, with auto
+  # deployment). After every green build of main, the exported site is committed there on top of
+  # the previous deployment, so Hostinger's `git pull` is always a fast forward.
+  publish-hostinger:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-hostinger
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v6
+        with:
+          name: site
+          path: ${{ runner.temp }}/site
+      - name: Commit the site to the hostinger branch
+        env:
+          SITE: ${{ runner.temp }}/site
+        run: |
+          set -euo pipefail
+          test -f "$SITE/index.html" && test -f "$SITE/.htaccess" && test -f "$SITE/404.html"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin hostinger >/dev/null; then
+            git switch -q hostinger
+          else
+            git switch -q --orphan hostinger
+          fi
+          # Replace the tree with the new export (deleted pages disappear too), keep .git.
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a "$SITE"/. .
+          cat > DEPLOY.md <<NOTE
+          Built from ${GITHUB_SHA} of main by the CI workflow. Do not edit this branch: Hostinger deploys it
+          to public_html as is. Source: https://github.com/${GITHUB_REPOSITORY}/tree/${GITHUB_SHA}
+          NOTE
+          git add -A
+          if git diff --cached --quiet; then
+            echo "The site did not change; nothing to deploy."
+            exit 0
+          fi
+          git commit -q -m "deploy: ${GITHUB_SHA::7}"
+          git push -q origin hostinger
+          echo "Deployed ${GITHUB_SHA::7} to the hostinger branch."
