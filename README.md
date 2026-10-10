@@ -81,12 +81,33 @@ ORKSTAGE_API_URL=https://api.example.com pnpm openapi:refresh
 
 ## Deploying (Hostinger)
 
-orkstage.io is served by Hostinger from the `hostinger` branch of this repository. CI builds the
-static export on every push to `main` and, when the build and every check pass, commits `out/` to
-that branch (job `publish-hostinger`). Hostinger pulls the branch into `public_html`.
-[`public/.htaccess`](public/.htaccess) ships with the export and configures the server: HTTPS and
-apex redirects, directory pages, the 404 page, security headers, a year of caching for hashed
-assets and compression.
+The site is a static export (`output: 'export'`): `pnpm run build` writes plain HTML, CSS and JS to
+`out/`, and nothing runs on the server. [`public/.htaccess`](public/.htaccess) ships with the export
+and configures LiteSpeed: HTTPS and apex redirects, directory pages, the 404 page, security headers,
+a year of caching for hashed assets and compression. Two ways to publish it on Hostinger:
+
+### Option A: Hostinger builds `main` (Node.js web app)
+
+Use these build settings; the defaults Hostinger detects for Next.js (server app, output `.next`)
+do not fit a static export:
+
+| Setting | Value |
+|---|---|
+| Branch | `main` |
+| Node.js version | 24 |
+| Package manager | pnpm |
+| Build command | `pnpm run build` |
+| Output directory | `out` |
+| Framework or application type | static site (Other) |
+
+`packageManager` pins pnpm 11 on purpose: Hostinger installs through corepack (0.34 on Node 24.6),
+which cannot start pnpm 12. Keep pnpm 11 here until Hostinger ships a newer corepack.
+
+### Option B: Hostinger serves the `hostinger` branch (no build on Hostinger)
+
+CI builds the static export on every push to `main` and, when the build and every check pass,
+commits `out/` to the `hostinger` branch (job `publish-hostinger`). Hostinger pulls the branch into
+`public_html`.
 
 One time setup in hPanel (Websites > Manage > Advanced > GIT):
 
