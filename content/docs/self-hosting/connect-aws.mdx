@@ -11,7 +11,7 @@ stay in memory and are never persisted or logged.
 control plane identity (worker task role / IAM user)
       │  sts:AssumeRole  + ExternalId
       ▼
-co-deploy role in the customer account  ──▶  OpenTofu runner (credentials for that one container)
+orkstage-deploy role in the customer account  ──▶  OpenTofu runner (credentials for that one container)
 ```
 
 <Callout type="warn">
@@ -33,7 +33,7 @@ repository once in each account you connect.
 |---|---|
 | `ControlPlanePrincipalArn` | ARN of the identity the OrkStage worker runs as, for example `arn:aws:iam::111122223333:role/orkstage-worker`. |
 | `ExternalId` | A random shared secret of at least 16 characters (`openssl rand -hex 24`). Marked `NoEcho`. |
-| `RoleName` | Defaults to `co-deploy`. |
+| `RoleName` | Defaults to `orkstage-deploy`. |
 
 ```bash
 aws cloudformation deploy \
@@ -54,7 +54,7 @@ In short, the role may:
   whose names start with `co-` (every physical name OrkStage creates does), plus log groups under
   `/orkstage/`;
 - read and write the OpenTofu state bucket `orkstage-tfstate-<account>-*`;
-- pass `co-*` roles to ECS tasks and EC2 only;
+- pass `ork-*` roles to ECS tasks and EC2 only;
 - call `iam:SimulatePrincipalPolicy` **on itself**, so OrkStage can check permissions before it
   deploys.
 
@@ -121,7 +121,7 @@ Content-Type: application/json
   "environment": "production",
   "config": {
     "accountId": "123456789012",
-    "roleArn": "arn:aws:iam::123456789012:role/co-deploy",
+    "roleArn": "arn:aws:iam::123456789012:role/orkstage-deploy",
     "stateBucket": "orkstage-tfstate-123456789012-us-east-1",
     "dnsZone": "apps.example.com"
   },

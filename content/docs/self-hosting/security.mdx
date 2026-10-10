@@ -8,7 +8,7 @@ description: Security controls built into OrkStage, a hardening checklist for ho
 | Area | Control |
 |---|---|
 | Sessions | An opaque random token of 32 bytes in an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). Only its SHA-256 hash is stored. Sessions expire after 12 hours and are revoked on logout. |
-| CSRF | Every request with a session that changes state must send `x-co-csrf: 1`. The API allows no CORS from other origins, so a browser on another site cannot send this header. Requests with a bearer API key are exempt. |
+| CSRF | Every request with a session that changes state must send `x-orkstage-csrf: 1`. The API allows no CORS from other origins, so a browser on another site cannot send this header. Requests with a bearer API key are exempt. |
 | OIDC | Authorization code grant with PKCE (S256). `state` and `nonce` are verified. The flow state lives in a signed, short lived cookie. `returnTo` accepts relative paths only. Provider tokens are discarded. |
 | Account linking | Only through an email address the provider has verified (`email_verified`, or `xms_edov` for Entra). OrkStage never trusts `preferred_username`, which prevents takeover in the style of "nOAuth". Unknown users get no account unless a tenant has put their domain on its allowlist. |
 | Dev login | Off unless `AUTH_DEV_LOGIN_ENABLED=true`. Startup fails if it is on while `NODE_ENV=production`. |
@@ -31,7 +31,7 @@ description: Security controls built into OrkStage, a hardening checklist for ho
       `https://`.
 - [ ] Postgres and Redis on private networks, with authentication and encryption in transit.
 - [ ] The worker on a dedicated host (it holds the Docker socket), with an IAM identity limited to
-      `sts:AssumeRole` on your `co-deploy` roles and `secretsmanager:GetSecretValue` on the
+      `sts:AssumeRole` on your `orkstage-deploy` roles and `secretsmanager:GetSecretValue` on the
       referenced secrets.
 - [ ] One AWS account per environment, with deployment roles created from the provided
       CloudFormation template and a unique external id for each.

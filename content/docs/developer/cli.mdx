@@ -44,7 +44,7 @@ docker run --rm -v "$PWD:/work" -v orkstage-cargo-registry:/usr/local/cargo/regi
   cargo build --release -p ork-cli
 
 # run it next to a platform started with Docker Compose
-docker run --rm --network cloud-orchestrator_default \
+docker run --rm --network orkstage_default \
   -e ORK_API_URL=http://api:4000 -e ORK_TOKEN=ork_live_… \
   -v orkstage-cli-target:/t:ro debian:bookworm-slim /t/release/ork whoami
 ```

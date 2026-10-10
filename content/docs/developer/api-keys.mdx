@@ -44,7 +44,7 @@ Only a signed in user (a session) can create keys. Another key cannot:
 
 ```http
 POST /api/v1/api-keys
-x-co-csrf: 1
+x-orkstage-csrf: 1
 Content-Type: application/json
 
 {
@@ -109,7 +109,7 @@ export ORK_TOKEN=ork_live_7f3a9c21_…
 curl -s "$ORK_API_URL/api/v1/instances" -H "Authorization: Bearer $ORK_TOKEN"
 ```
 
-Requests with a bearer token need no `x-co-csrf` header.
+Requests with a bearer token need no `x-orkstage-csrf` header.
 
 ## Lifecycle
 

@@ -6,7 +6,7 @@
         "operationId": "AuthController_providers",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -28,7 +28,7 @@
         "operationId": "AuthController_devLogin",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -87,7 +87,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -117,7 +117,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -139,7 +139,7 @@
         "operationId": "AuthController_logout",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -161,7 +161,7 @@
         "operationId": "AuthController_me",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -183,7 +183,7 @@
         "operationId": "TenantsController_plans",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -205,7 +205,7 @@
         "operationId": "TenantsController_list",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -225,7 +225,7 @@
         "operationId": "TenantsController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -299,7 +299,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -327,7 +327,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -377,7 +377,7 @@
         "operationId": "TemplatesController_list",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -397,7 +397,7 @@
         "operationId": "TemplatesController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -448,7 +448,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -478,7 +478,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -529,7 +529,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -595,7 +595,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -625,7 +625,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -673,7 +673,7 @@
         "operationId": "CloudController_applications",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -695,7 +695,7 @@
         "operationId": "CloudController_providers",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -717,7 +717,7 @@
         "operationId": "CloudController_list",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -737,7 +737,7 @@
         "operationId": "CloudController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -841,7 +841,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -887,7 +887,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -909,7 +909,7 @@
         "operationId": "InstancesController_list",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -929,7 +929,7 @@
         "operationId": "InstancesController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1046,7 +1046,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1074,7 +1074,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1162,7 +1162,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1192,7 +1192,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1222,7 +1222,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1273,7 +1273,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1322,7 +1322,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1360,7 +1360,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1398,7 +1398,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1428,7 +1428,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1490,7 +1490,7 @@
         "operationId": "DeploymentsController_list",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1520,7 +1520,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1558,7 +1558,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1588,7 +1588,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1618,7 +1618,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1648,7 +1648,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1670,7 +1670,7 @@
         "operationId": "OpsController_healthz",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1692,7 +1692,7 @@
         "operationId": "OpsController_readyz",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1714,7 +1714,7 @@
         "operationId": "OpsController_overview",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1744,7 +1744,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1774,7 +1774,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1796,7 +1796,7 @@
         "operationId": "OpsController_notifications",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1826,7 +1826,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1848,7 +1848,7 @@
         "operationId": "OpsController_audit",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1870,7 +1870,7 @@
         "operationId": "IncidentsController_list",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1890,7 +1890,7 @@
         "operationId": "IncidentsController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -1989,7 +1989,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2019,7 +2019,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2091,7 +2091,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2111,7 +2111,7 @@
         "operationId": "ApiKeysController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2211,7 +2211,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2241,7 +2241,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2261,7 +2261,7 @@
         "operationId": "WebhooksController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2342,7 +2342,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2414,7 +2414,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2444,7 +2444,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2474,7 +2474,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2504,7 +2504,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2542,7 +2542,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2564,7 +2564,7 @@
         "operationId": "CiController_validate",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2625,7 +2625,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2714,7 +2714,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2777,7 +2777,7 @@
         "operationId": "ImportsController_create",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2851,7 +2851,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2881,7 +2881,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2911,7 +2911,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -2959,7 +2959,7 @@
         "operationId": "LicenseController_get",
         "parameters": [
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -3005,7 +3005,7 @@
             }
           },
           {
-            "name": "x-co-csrf",
+            "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
             "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
@@ -3040,7 +3040,7 @@
       "cookie": {
         "type": "apiKey",
         "in": "cookie",
-        "name": "co_session"
+        "name": "orkstage_session"
       },
       "apiKey": {
         "scheme": "bearer",
