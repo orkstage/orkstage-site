@@ -12,7 +12,8 @@ turns each resource into real infrastructure.
   AWS is tested against MiniStack and runs on real accounts. The other adapters on this page are in
   <Badge>Preview</Badge>: they are covered by unit tests, and the OpenTofu modules of the
   infrastructure clouds pass `tofu validate`, but none of them has been verified against a live
-  account yet. Expect changes.
+  account yet. Expect changes. Preview providers are **disabled by default**; see
+  [enabling a provider](#enabling-a-provider).
 </Callout>
 
 ## Two kinds of provider
@@ -55,6 +56,35 @@ provider offers those three types yet.
 
 Each provider page lists what every capability creates, the settings it ignores and its known
 limits. The plan shows the capability chosen for each resource before anything is deployed.
+
+## Enabling a provider
+
+Each provider has a feature flag, `PROVIDER_<NAME>` (for example `PROVIDER_AZURE` or
+`PROVIDER_VERCEL`). Only `PROVIDER_AWS` and `PROVIDER_MOCK` (simulation) are on by default. While a
+provider's flag is off:
+
+- registering a target for it fails with `PROVIDER_DISABLED`;
+- an instance whose placement slot is bound to one of its targets does not compile (create,
+  update, preview and deploy are refused), and the worker checks again before applying;
+- destroying an instance always works, so turning a provider off never strands resources;
+- simulation targets can still imitate it, which is the way to try a template without an account.
+
+A platform owner changes flags in the console under **Settings > Feature flags**, for the whole
+platform or for one tenant (a tenant value wins over the platform value), or through the API:
+
+```bash
+# Enable Azure for one tenant only
+curl -X PUT "$ORKSTAGE_API/feature-flags/PROVIDER_AZURE" \
+  -H "Content-Type: application/json" -H "x-orkstage-csrf: 1" -b "$SESSION_COOKIE" \
+  -d '{"enabled": true, "tenantId": "<tenant id>"}'
+
+# Remove that override again
+curl -X DELETE "$ORKSTAGE_API/feature-flags/PROVIDER_AZURE?tenantId=<tenant id>" \
+  -H "x-orkstage-csrf: 1" -b "$SESSION_COOKIE"
+```
+
+Flag changes need a session with the platform owner role (API keys cannot change them) and are
+recorded in the audit log. `GET /cloud/providers` reports whether each provider is enabled.
 
 ## Registering a cloud target
 
