@@ -28,7 +28,7 @@ management, answer `403 API_KEY_NOT_ALLOWED` to a key.
 <Tab value="Session (browser)">
 
 The console signs in through OIDC (or the development login when you run locally) and receives an
-opaque session token in the `co_session` cookie. The cookie is `httpOnly` and `SameSite=Lax`, is
+opaque session token in the `orkstage_session` cookie. The cookie is `httpOnly` and `SameSite=Lax`, is
 `Secure` in production, and expires after 12 hours. The server stores only the SHA-256 hash of the
 token, and logout revokes it.
 
@@ -36,7 +36,7 @@ Every request that changes state (`POST`, `PATCH`, `PUT`, `DELETE`) and uses a s
 this header:
 
 ```http
-x-co-csrf: 1
+x-orkstage-csrf: 1
 ```
 
 A browser cannot add a custom header to a request for another site without a CORS preflight, and the

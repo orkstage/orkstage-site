@@ -48,14 +48,14 @@ containers on the Compose network. These variables wire it up:
 | `TOFU_WORK_DIR` | `/var/lib/orkstage/tofu` | Location of the working directories inside the worker. |
 | `TOFU_WORK_VOLUME` | `orkstage-tofu-work` | The same directory as a named volume. The Docker daemon cannot see paths inside the worker container, so runners mount the volume instead. |
 | `TOFU_PLUGIN_CACHE_VOLUME` | `orkstage-tofu-plugins` | Provider plugin cache shared by all runners. |
-| `TOFU_DOCKER_NETWORK` | `cloud-orchestrator_default` | Lets runners reach MiniStack by name. |
+| `TOFU_DOCKER_NETWORK` | `orkstage_default` | Lets runners reach MiniStack by name. |
 
 Inside the network, MiniStack answers at `http://ministack:4566` (`AWS_EMULATOR_ENDPOINT`). Links in
 the console still point to `http://localhost:4566`.
 
 <Callout title="Names kept on purpose">
-  The Compose project is still named `cloud-orchestrator`, the working name of the platform before the
-  OrkStage rebrand. Keeping it leaves existing volumes and the `cloud-orchestrator_default` network
+  The Compose project is still named `orkstage`, the working name of the platform before the
+  OrkStage rebrand. Keeping it leaves existing volumes and the `orkstage_default` network
   attached.
 </Callout>
 
