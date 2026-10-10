@@ -1,0 +1,61 @@
+# orkstage.io on Hostinger (LiteSpeed, Apache compatible). Copied to the root of out/ by the build
+# and served from public_html. Mirrors what the CloudFront setup in infra/ does: HTTPS and apex
+# redirects, directory indexes, the 404 page, security headers and long caching for hashed assets.
+
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+# Every route is exported as <route>/index.html (trailingSlash). The /route to /route/ redirect is
+# done below with mod_rewrite so it always points to https (DirectorySlash would use the internal
+# scheme behind Hostinger's TLS proxy).
+DirectorySlash Off
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # HTTPS only (Hostinger terminates TLS in front of the site, so check the forwarded scheme too).
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # www.orkstage.io to orkstage.io
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  # /route to /route/ for exported directories.
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^(.*[^/])$ https://%{HTTP_HOST}/$1/ [R=301,L]
+
+  # Hashed build assets never change: cache them for a year.
+  RewriteRule ^_next/static/ - [E=ORK_IMMUTABLE:1]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+
+  # Pages and data files revalidate on every visit, so a deployment shows up at once.
+  Header set Cache-Control "public, max-age=0, must-revalidate"
+  Header set Cache-Control "public, max-age=31536000, immutable" env=ORK_IMMUTABLE
+  # Fonts and brand images keep their names across deployments: a day in the browser.
+  <FilesMatch "\.(woff2?|png|svg|ico|webp)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+  AddType text/plain .txt
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Nothing in the deploy branch except the site should be served.
+<FilesMatch "^(\.git.*|README\.md|DEPLOY\.md)$">
+  Require all denied
+</FilesMatch>

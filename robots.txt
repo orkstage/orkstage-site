@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+
+Host: https://orkstage.io
+Sitemap: https://orkstage.io/sitemap.xml
