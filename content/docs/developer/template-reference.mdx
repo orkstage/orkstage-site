@@ -63,7 +63,7 @@ A placement slot is a named group of resources that an instance binds to one clo
 |---|---|---|---|
 | `name` | id | required | Resources refer to it in their `placement` field. |
 | `description` | string | | |
-| `providers` | enum[] | `[]` (any) | Allowed providers: `aws`, `azure`, `gcp`, `oci`, `mock`. An empty list allows any registered provider. |
+| `providers` | enum[] | `[]` (any) | Allowed providers: `aws`, `azure`, `gcp`, `oci`, `digitalocean`, `vultr`, `coreweave`, `magalu`, `vercel`, `render`, `supabase`, `mock`. An empty list allows any registered provider. See [providers](/docs/providers/). |
 
 ```yaml
 placements:
@@ -194,6 +194,7 @@ AWS implementation: ElastiCache with the Valkey engine, which is compatible with
 | `versioning` | boolean | `false` | |
 | `publicAccess` | boolean | `false` | The `no-public-storage` policy fails a bucket with `true`. |
 | `retentionDays` | integer | | Lifecycle expiration, in days. |
+| `accessKeys` | boolean | `false` | Create an access key limited to this bucket and keep it in the provider's secret store, for consumers on other providers (a Vercel or Render app). Services on the same provider use their own identity instead. |
 | `critical` | boolean | `false` | |
 
 ### `ingress`
@@ -210,6 +211,43 @@ AWS implementation: ElastiCache with the Valkey engine, which is compatible with
 | `target` | id | required | The ingress this name points to. |
 | `subdomain` | boolean | `true` | A name under the platform zone, for example `production-acme.apps.example.com`. |
 | `customDomain` | enum | `disabled` | `disabled`, `optional`, `required`. |
+
+### `web.frontend`
+
+A website, landing page or web app built from a Git repository by a frontend platform (Vercel
+projects, Render static sites).
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `source.repository` | string | required | `owner/name` on the platform's connected Git provider. |
+| `source.branch` | string | `main` | |
+| `source.rootDirectory` | string | | Folder of the app inside a monorepo. |
+| `source.gitProvider` | enum | `github` | `github`, `gitlab`, `bitbucket`. |
+| `framework` | string | | Preset such as `nextjs`, `vite` or `astro`; detected when omitted. |
+| `buildCommand`, `installCommand`, `outputDirectory` | string | | Override the preset. |
+| `nodeVersion` | string | | `22` or `22.x`. |
+| `environment` | map | `{}` | Plain settings, keys in `UPPER_SNAKE_CASE`. Never put credentials here. |
+| `domains` | string[] | `[]` | Custom domains, up to 20. |
+| `previewDeployments` | boolean | `true` | A preview build for each pull request, where supported. |
+| `healthCheckPath` | string | `/` | Path the health check requests. |
+| `critical` | boolean | `true` | |
+
+Resources listed in `dependsOn` reach the frontend as environment variables. Connection settings
+arrive in plain text (`<ID>_HOST`, `<ID>_PORT`, `<ID>_URL`, `<ID>_BUCKET`, `<ID>_ENDPOINT`,
+`<ID>_REGION`); credentials a dependency publishes arrive as encrypted values, one per field
+(`<ID>_URL`, `<ID>_USERNAME`, `<ID>_PASSWORD`, `<ID>_ACCESS_KEY_ID`, `<ID>_SECRET_ACCESS_KEY`, and
+so on), read from the provider that owns the dependency at deploy time. `<ID>` is the resource id
+in upper case with dashes turned into underscores.
+
+```yaml
+- id: web
+  type: web.frontend
+  placement: web
+  source: { repository: acme/website, branch: main }
+  framework: nextjs
+  environment: { NEXT_PUBLIC_APP_NAME: Acme }
+  dependsOn: [database, files]
+```
 
 ## Connectivity
 
@@ -230,6 +268,40 @@ connectivity:
   - { from: api, to: storage, protocol: https, mode: secure }
 ```
 
+## Triggers
+
+A trigger is a named action on one deployed resource, with default parameters: redeploy a
+frontend, restart a service, take a database restore point. The provider decides which actions
+exist; the console and `GET /instances/{id}/triggers` list them with their parameters.
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `name` | id | required | Unique in the template. |
+| `description` | string | | |
+| `resource` | id | required | The resource the action runs on. |
+| `action` | string | required | For example `redeploy`, `restart`, `rollback`, `purge-cache`, `backup`. |
+| `params` | map | `{}` | Default parameters, checked against the action when it runs. |
+| `overridable` | string[] | `[]` | Parameters a caller may change at run time. Anything else is rejected. |
+| `on.manual` | boolean | `true` | Run from the console or the CLI. |
+| `on.webhook` | boolean | `false` | Run with an API key holding `instances:deploy`, for example from CI or a CMS. |
+| `on.schedule` | cron | | Five field cron expression in UTC, for example `0 3 * * *`. |
+
+```yaml
+triggers:
+  - name: redeploy-site
+    resource: web
+    action: redeploy
+    params: { target: production }
+    overridable: [ref]
+    on: { manual: true, webhook: true }
+  - name: nightly-backup
+    resource: database
+    action: backup
+    on: { manual: false, schedule: '0 3 * * *' }
+```
+
+See [triggers](/docs/user-guide/triggers/) for running them and following their runs.
+
 ## Observability
 
 | Field | Default |
@@ -242,9 +314,10 @@ connectivity:
 
 ## Example: the multicloud reference
 
-This example places the API on AWS, the database on Azure and object storage on OCI. AWS is
-deployed for real through OpenTofu. Azure and OCI are simulated in this release, so those two slots
-produce simulated resources unless you bind them to an AWS target.
+This example places the API on AWS, the database on Azure and object storage on OCI. Bind each
+slot to a real target of that provider, to a simulation target that imitates it, or bind every slot
+to the same AWS target for the AWS only variant. The Azure and OCI adapters are in preview (see
+[providers](/docs/providers/)).
 
 ```yaml title="06-multicloud-reference.yaml"
 apiVersion: platform/v1

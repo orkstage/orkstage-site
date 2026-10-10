@@ -1,0 +1,142 @@
+---
+title: Providers
+description: The clouds and platforms OrkStage deploys to, what each one offers for every resource type, how credentials work and where OpenTofu state lives.
+---
+
+A template names resource types such as `database.postgresql` or `web.frontend`, never a provider.
+When you create an instance, each placement slot is bound to a **cloud target** (one account,
+project, team or workspace of a provider) and a region. The provider adapter behind that target
+turns each resource into real infrastructure.
+
+<Callout title="Status" type="warn">
+  AWS is tested against MiniStack and runs on real accounts. The other adapters on this page are in
+  <Badge>Preview</Badge>: they are covered by unit tests, and the OpenTofu modules of the
+  infrastructure clouds pass `tofu validate`, but none of them has been verified against a live
+  account yet. Expect changes.
+</Callout>
+
+## Two kinds of provider
+
+**Infrastructure clouds** (AWS, Microsoft Azure, Google Cloud, Oracle Cloud Infrastructure,
+DigitalOcean, Vultr, CoreWeave and Magalu Cloud) are deployed with **OpenTofu**. For each resource,
+the worker runs an OpenTofu module in a throwaway runner container. Every resource has its own
+state file, kept in a bucket or container **in your own account**. OrkStage keeps outputs and
+references, not the state.
+
+**Application platforms** (Vercel, Render and Supabase) are driven through their **REST APIs**.
+There is no OpenTofu, no module and no state store: the platform itself holds the state, and the
+adapter finds its resources again by name, so repeating a deployment converges the existing
+resource instead of creating a second one.
+
+Both kinds can be mixed in one instance. See [mixing providers](/docs/providers/mixing-providers/).
+
+## Support matrix
+
+Each cell is the capability id you can set in a resource's `implementation` field. When a type has
+more than one capability, the first one is the default. "Not offered" means the provider has no
+capability for that type: place that resource on another provider.
+
+| Provider | Network | Container service | PostgreSQL | Redis or Valkey | Object storage | Ingress | Web frontend |
+|---|---|---|---|---|---|---|---|
+| [AWS](/docs/self-hosting/connect-aws/) | `vpc` | `ecs-fargate`, `ecs-ec2` | `rds-postgres` | `elasticache-valkey` | `s3` | `alb` | not offered |
+| [Microsoft Azure](/docs/providers/azure/) | `vnet` | `container-apps` | `flexible-server` | `managed-redis` | `blob-storage` | `container-apps-ingress`, `front-door` | not offered |
+| [Google Cloud](/docs/providers/gcp/) | `vpc` | `cloud-run` | `cloud-sql-postgres` | `memorystore-redis` | `gcs` | `cloud-run-ingress` | not offered |
+| [Oracle Cloud Infrastructure](/docs/providers/oci/) | `vcn` | `container-instances` | `oci-postgresql` | `oci-cache` | `object-storage` | `flexible-load-balancer` | not offered |
+| [DigitalOcean](/docs/providers/digitalocean/) | `vpc` | `app-platform` | `managed-postgres` | `managed-valkey` | `spaces` | `app-platform-ingress` | not offered |
+| [Vultr](/docs/providers/vultr/) | `vpc` | `instance-docker` | `managed-postgres` | `managed-valkey` | `object-storage` | `load-balancer` | not offered |
+| [CoreWeave](/docs/providers/coreweave/) | `vpc` | `cks-deployment` | not offered | not offered | `ai-object-storage` | `cks-ingress` | not offered |
+| [Magalu Cloud](/docs/providers/magalu/) | `vpc` | `vm-docker` | `dbaas-postgres` | not offered | `object-storage` | not offered | not offered |
+| [Vercel](/docs/providers/vercel/) | not offered | not offered | not offered | not offered | not offered | not offered | `vercel-project` |
+| [Render](/docs/providers/render/) | not offered | `render-web-service`, `render-private-service` | `render-postgres` | `render-key-value` | not offered | not offered | `render-static-site` |
+| [Supabase](/docs/providers/supabase/) | not offered | not offered | `supabase-postgres` | not offered | `supabase-storage` | not offered | not offered |
+
+AWS also covers `container-registry` (`ecr`), `queue` (`sqs`) and `dns` (`route53`). No other
+provider offers those three types yet.
+
+Each provider page lists what every capability creates, the settings it ignores and its known
+limits. The plan shows the capability chosen for each resource before anything is deployed.
+
+## Registering a cloud target
+
+Platform owners and admins register targets in the console under **Cloud targets**, or with
+`POST /api/v1/cloud/targets`. The console form asks for the same fields each provider page lists.
+
+```http
+POST /api/v1/cloud/targets
+Content-Type: application/json
+
+{
+  "provider": "gcp",
+  "name": "gcp-prod",
+  "environment": "production",
+  "config": { "projectId": "acme-prod-123", "stateBucket": "acme-orkstage-state" },
+  "credentialRef": "aws-sm://orkstage/gcp/prod",
+  "allowedRegions": ["us-central1", "southamerica-east1"],
+  "defaultRegion": "us-central1"
+}
+```
+
+`config` holds only identifiers that are not secret. The API rejects keys that look like secrets
+with `422 SECRET_IN_CONFIG`. After registering, click **Validate**: each adapter checks the
+configuration, signs in and shows the identity it found. Infrastructure clouds also check that
+the state storage answers.
+
+## How credentials work
+
+OrkStage never stores provider credentials. A target carries a **`credentialRef`**, a reference to
+a secret that the control plane resolves when it needs it:
+
+```text
+env://ORKSTAGE_AZURE_PROD             # environment variable of the API and worker
+aws-sm://orkstage/azure/prod          # AWS Secrets Manager secret (name or ARN)
+```
+
+The secret holds a **JSON object** with the fields the provider page lists, for example
+`{ "clientSecret": "<client secret>" }` for Azure. When a provider needs a single field (an API
+token or key), the secret can also be the bare value.
+
+Credentials stay in memory. For infrastructure clouds they reach OpenTofu only as environment
+variables of one runner command; for application platforms they are sent only to the provider's
+API. They are not written to the configuration, the state keys, the database or the logs. See
+[secret references](/docs/self-hosting/secrets/) for the schemes and how they resolve.
+
+## Where state lives
+
+| Provider | OpenTofu state | Created by |
+|---|---|---|
+| AWS | S3 bucket `orkstage-tfstate-<account>-<region>` or `stateBucket` | You |
+| Microsoft Azure | Blob container in a storage account of your subscription | You |
+| Google Cloud | GCS bucket in your project | You |
+| Oracle Cloud Infrastructure | Object Storage bucket, through the S3 compatibility API | You |
+| DigitalOcean | Spaces bucket of your team | You |
+| Vultr | Object Storage bucket of your account | You |
+| CoreWeave | AI Object Storage bucket | You |
+| Magalu Cloud | Object Storage bucket in your tenant | You |
+| Vercel, Render, Supabase | No state store: the platform is the state | |
+
+OrkStage never creates the state bucket or container. Validation reports it as missing until it
+exists. Turn on versioning so you can recover an older state. Where the storage does not confirm
+conditional writes (OCI, Vultr, CoreWeave, Magalu Cloud), OpenTofu runs without a lock file;
+OrkStage already runs one operation per resource at a time.
+
+## Triggers
+
+The actions a [trigger](/docs/user-guide/triggers/) can run depend on the capability of its
+resource:
+
+| Capability | Actions |
+|---|---|
+| `container-apps` (Azure) | `restart` |
+| `cloud-run` (Google Cloud) | `redeploy` |
+| `container-instances` (OCI) | `restart` |
+| `app-platform` (DigitalOcean) | `redeploy`, `restart` |
+| `instance-docker` (Vultr) | `restart` |
+| `cks-deployment` (CoreWeave) | `restart` |
+| `vm-docker` (Magalu Cloud) | `restart` |
+| `vercel-project` | `redeploy`, `promote`, `rollback`, `purge-cache` |
+| `render-web-service`, `render-private-service` | `redeploy`, `restart`, `rollback`, `scale`, `suspend`, `resume` |
+| `render-static-site` | `redeploy`, `rollback`, `suspend`, `resume` |
+| `render-postgres` | `restart` |
+| `supabase-postgres` | `restart`, `pause`, `restore`, `backup` |
+
+Each provider page lists the parameters of its actions.

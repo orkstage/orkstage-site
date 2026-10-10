@@ -1,0 +1,20 @@
+{
+  "title": "Providers",
+  "description": "Infrastructure clouds and application platforms OrkStage deploys to, what each creates and how to connect it",
+  "root": true,
+  "pages": [
+    "index",
+    "[AWS](/docs/self-hosting/connect-aws/)",
+    "azure",
+    "gcp",
+    "oci",
+    "digitalocean",
+    "vultr",
+    "coreweave",
+    "magalu",
+    "vercel",
+    "render",
+    "supabase",
+    "mixing-providers"
+  ]
+}

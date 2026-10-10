@@ -1,0 +1,159 @@
+---
+title: Supabase
+description: Run PostgreSQL as Supabase projects and keep files in Supabase Storage. Access token, organization, regions, how the password is derived, triggers and limits.
+---
+
+<Callout title="Preview" type="warn">
+  The Supabase adapter is covered by unit tests. It has not been verified against a live
+  organization yet.
+</Callout>
+
+The Supabase adapter talks to the Supabase Management API (`https://api.supabase.com/v1`) and to
+each project's Storage API. There is no OpenTofu, no module and no state store: Supabase keeps the
+state, and the adapter finds its resources again by name.
+
+## What OrkStage creates
+
+| Template resource | Capability | What gets created |
+|---|---|---|
+| `database.postgresql` | `supabase-postgres` (default) | One Supabase project per resource |
+| `object-storage` | `supabase-storage` (default) | A Storage bucket inside a `supabase-postgres` project |
+
+### Database
+
+OrkStage creates a project named after the resource in the target's organization and region, then
+waits (bounded, cancellable) until it reports `ACTIVE_HEALTHY`. The template `size` becomes the
+compute size (`micro`, `small`, `medium`, `large`, `xlarge`). On a free plan organization the size
+is left to Supabase (Nano).
+
+Outputs: `kind`, `project_ref`, `host` (`db.<ref>.supabase.co`), `port` (5432), `database`
+(`postgres`), `username` (`postgres`), `pooler_host`, `pooler_port`, `pooler_username`, `region`,
+`api_url`, `dashboard_url` and `secret_ref` (`supabase://<ref>/database`).
+
+### Storage
+
+OrkStage creates a bucket named after the resource inside the project of the `supabase-postgres`
+resource it depends on. Without that dependency, the deployment fails with a validation error
+asking for `dependsOn`. `publicAccess` sets the bucket's public flag and is converged on every
+apply.
+
+Outputs: `kind`, `bucket`, `endpoint` (S3 compatible, `https://<ref>.supabase.co/storage/v1/s3`),
+`region`, `project_ref`, `api_url`, `public`, `public_url` (public buckets only),
+`deletion_protected` and `secret_ref` (`supabase://<ref>/storage`).
+
+```yaml
+resources:
+  - id: db
+    type: database.postgresql
+    placement: data
+    size: small
+  - id: uploads
+    type: object-storage
+    placement: data
+    dependsOn: [db]
+```
+
+## How secrets flow
+
+- **The database password is never stored.** OrkStage derives it from its encryption key (an HMAC
+  of `supabase:db:<target id>:<project name>`). The adapter turns that into a 32 character
+  alphanumeric password, sends it once when it creates the project, and derives it again whenever
+  it is needed.
+- Outputs carry only `secret_ref`. When a resource on another provider needs the credentials,
+  OrkStage calls the Supabase adapter's `readSecret`:
+  - `supabase://<ref>/database` returns `url` (direct connection, `sslmode=require`), `poolerUrl`
+    (Supavisor), `username`, `password`, `host`, `port` and `database`.
+  - `supabase://<ref>/storage` returns `url` (project API URL), `serviceRoleKey` and `anonKey`,
+    read from the Management API each time.
+- Values never appear in outputs, logs or error messages. Errors from Supabase are redacted.
+
+## Target configuration
+
+| `config` field | Required | Meaning |
+|---|---|---|
+| `organizationId` | yes | Organization slug: the id in the dashboard URL (`https://supabase.com/dashboard/org/<slug>`), or the `slug` field of `GET /v1/organizations` |
+
+```sh
+curl -s -H "Authorization: Bearer $SUPABASE_TOKEN" https://api.supabase.com/v1/organizations
+```
+
+```json
+{
+  "provider": "supabase",
+  "name": "Acme data",
+  "config": { "organizationId": "acme-slug" },
+  "credentialRef": "env://SUPABASE_TOKEN",
+  "allowedRegions": ["sa-east-1", "us-east-1"],
+  "defaultRegion": "sa-east-1"
+}
+```
+
+## Credential secret
+
+Create a personal access token in the Supabase dashboard under Account, Access Tokens
+(`https://supabase.com/dashboard/account/tokens`). The token acts as its owner, so use an account
+that is a member of the target organization. An OAuth access token works too. It needs the scopes
+`organizations:read`, `projects:read`, `projects:write`, `secrets:read`, `database:read`,
+`database:write` (restore points) and `analytics:read` (logs).
+
+The secret behind `credentialRef` is the bare token or a JSON object:
+
+```json
+{ "token": "<personal access token>" }
+```
+
+Validation lists the organizations the token can see, checks that the configured slug is one of
+them (the identity shown is the organization name), reports the plan and checks the region.
+
+## Regions
+
+Regions are Supabase region codes: `us-east-1`, `us-east-2`, `us-west-1`, `us-west-2`,
+`ca-central-1`, `sa-east-1`, `eu-west-1`, `eu-west-2`, `eu-west-3`, `eu-north-1`, `eu-central-1`,
+`eu-central-2`, `ap-east-1`, `ap-south-1`, `ap-southeast-1`, `ap-southeast-2`, `ap-northeast-1`,
+`ap-northeast-2`.
+
+## Actions for triggers
+
+| Capability | Action | Parameters | Effect |
+|---|---|---|---|
+| `supabase-postgres` | `restart` | none | Restarts the project |
+| `supabase-postgres` | `pause` | none | Pauses the project |
+| `supabase-postgres` | `restore` | none | Resumes a paused project |
+| `supabase-postgres` | `backup` | `name` (optional, at most 20 characters) | Creates a restore point |
+
+```yaml
+triggers:
+  - name: nightly-restore-point
+    resource: db
+    action: backup
+    on: { manual: true, schedule: "0 3 * * *" }
+```
+
+## Health, logs and deletion
+
+- Health checks the project status first (`ACTIVE_HEALTHY` continues, `COMING_UP` and other
+  transitions are degraded, paused or failed projects are unhealthy), then the health of the
+  database, REST, auth and storage services (database) or of storage and the bucket itself
+  (storage). The database service is critical; other services down only degrade.
+- Logs are the last hour of the unified logs stream (`postgres_logs` or `storage_logs`).
+- Deleting a database deletes the whole project, including its buckets. OrkStage destroy
+  protection is what guards production.
+- Deleting a bucket empties it first, unless it was created for a production environment
+  (`deletion_protected`). A protected bucket that still has objects is not deleted.
+
+## Known limits
+
+- One Supabase project per database. Supabase picks the Postgres major version.
+- Free plan: Nano compute whatever the template asks, at most two active projects, 500 MB database,
+  1 GB storage and 50 MB per file. Projects pause after a week without activity; run `restore`.
+- Compute size applies at creation only. Resize in the dashboard, which restarts the database.
+- No high availability through the API. Read replicas are a separate paid option outside this adapter.
+- The direct host is IPv6 only unless the project has the paid IPv4 address option. IPv4 clients such as serverless functions
+  should use `poolerUrl`.
+- Storage has no versioning, lifecycle rules or tiers. The Management API cannot create S3 access
+  keys, so none are returned; create them in the dashboard if a client needs the S3 protocol.
+  OrkStage shares the project service role key instead.
+- Restore points depend on the organization plan. The `backup` action fails cleanly where they are
+  not offered.
+- The catalog price is the list price of the compute size (Micro 10, Small 15, Medium 60, Large 110,
+  XL 210 USD a month, disk 0.125 USD per GB after 8 GB). The organization plan fee is separate.
