@@ -911,6 +911,110 @@
         ]
       }
     },
+    "/api/v1/feature-flags": {
+      "get": {
+        "operationId": "FeatureFlagsController_list",
+        "parameters": [
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/feature-flags/{key}": {
+      "put": {
+        "operationId": "FeatureFlagsController_set",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "tenantId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "enabled"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      },
+      "delete": {
+        "operationId": "FeatureFlagsController_reset",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "settings"
+        ]
+      }
+    },
     "/api/v1/instances": {
       "get": {
         "operationId": "InstancesController_list",
