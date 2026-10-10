@@ -1,0 +1,196 @@
+---
+title: Oracle Cloud Infrastructure
+description: Connect an OCI compartment with an API signing key, prepare the state bucket and vault, and see what OrkStage creates on Container Instances and OCI PostgreSQL.
+---
+
+<Callout title="Preview" type="warn">
+  The OCI adapter is covered by unit tests and its OpenTofu modules pass `tofu validate`. It has
+  not been verified against a live tenancy yet.
+</Callout>
+
+OrkStage creates OCI resources with the OpenTofu modules in `orkstage-modules/modules/oci`, one
+isolated state per resource, kept in an Object Storage bucket of your tenancy through the S3
+compatibility API. Identity, health, secrets and actions use the OCI REST APIs with signed
+requests (OCI HTTP Signature, `rsa-sha256`).
+
+One cloud target is one compartment in one tenancy.
+
+## What OrkStage creates
+
+| Template resource | Capability | What gets created |
+|---|---|---|
+| `network` | `vcn` (default) | VCN, internet gateway, service gateway, NAT gateway when `natGateway` is set, one public and one private regional subnet with security lists |
+| `compute.container-service` | `container-instances` (default) | One container instance per replica on `CI.Standard.E4.Flex`, spread across availability domains, an NSG for the service port, each instance registered in its load balancer backend set |
+| `database.postgresql` | `oci-postgresql` (default) | OCI Database with PostgreSQL on `PostgreSQL.VM.Standard.E5.Flex`, credentials JSON in a Vault secret (`secret_ref`) |
+| `cache.redis` | `oci-cache` (default) | OCI Cache, a non sharded Valkey 7.2 cluster with TLS on port 6379 |
+| `object-storage` | `object-storage` (default) | Bucket with versioning, tier (Archive bucket or Infrequent Access auto tiering), optional public read and expiry rule |
+| `ingress` | `flexible-load-balancer` (default) | Public flexible load balancer, one backend set per route, longest prefix path routing on port 80 |
+
+Sizes:
+
+| Size | PostgreSQL (OCPU, memory) | Cache node memory |
+|---|---|---|
+| `micro` | 1, 16 GB | 2 GB |
+| `small` | 2, 32 GB | 4 GB |
+| `medium` | 4, 64 GB | 8 GB |
+| `large` | 8, 128 GB | 16 GB |
+| `xlarge` | 16, 256 GB | not offered |
+
+Container CPU is converted to whole OCPUs (1 OCPU is 2 vCPUs, at least 1), and memory is rounded
+up to whole GB within 1 to 64 GB per OCPU.
+
+Services receive their dependencies as `<ID>_HOST`, `<ID>_PORT`, `<ID>_URL`, `<ID>_BUCKET` and
+`<ID>_ENDPOINT`. Container instances cannot inject secrets, so a dependency's credentials arrive
+as `<ID>_CREDENTIALS_REF`, the Vault secret OCID. The application reads it with its own identity,
+for example a resource principal with `read secret-bundles`. Resources on other providers can read
+the same secret through `readSecret` (fields `username`, `password`, `host`, `port`, `database`,
+`url`).
+
+## Target configuration
+
+| `config` field | Required | Meaning |
+|---|---|---|
+| `tenancyOcid` | yes | Tenancy OCID |
+| `userOcid` | yes | OCID of the API user |
+| `fingerprint` | yes | Fingerprint of the API signing key |
+| `compartmentOcid` | yes | Compartment where resources are created (the tenancy OCID for the root compartment) |
+| `namespace` | yes | Object Storage namespace (`oci os ns get`) |
+| `stateBucket` | yes | Existing bucket for OpenTofu state |
+| `vaultOcid` | no | Vault for generated database credentials |
+| `keyOcid` | no | AES master encryption key in that vault |
+
+Set `vaultOcid` and `keyOcid` together. Without them, every PostgreSQL database creates its own
+vault and software key, and validation shows a warning, because OCI keeps a deleted vault in a
+pending deletion state for at least 7 days.
+
+## Credential secret
+
+```json
+{
+  "privateKey": "<PEM private key of the API signing key>",
+  "stateAccessKeyId": "<customer secret key id>",
+  "stateSecretAccessKey": "<customer secret key>"
+}
+```
+
+| Field | What it is |
+|---|---|
+| `privateKey` | PEM private key of the API signing key (PKCS#1 or PKCS#8, no passphrase), with line breaks written as `\n` |
+| `stateAccessKeyId` | Customer secret key id, used only for the state bucket |
+| `stateSecretAccessKey` | Customer secret key value, used only for the state bucket |
+
+The private key reaches OpenTofu only as `TF_VAR_oci_private_key` in the runner environment, read
+by a sensitive root variable. The state keys reach it only as `AWS_ACCESS_KEY_ID` and
+`AWS_SECRET_ACCESS_KEY` for the S3 backend. None of them is written to the configuration.
+
+## Prepare the tenancy
+
+<Steps>
+<Step>
+
+### API user and signing key
+
+Create a user (or use an existing one) in a group that has the permissions listed below, then give
+it an API signing key:
+
+```sh
+oci setup keys                       # writes ~/.oci/oci_api_key.pem and oci_api_key_public.pem
+oci iam user api-key upload --user-id <user OCID> --key-file ~/.oci/oci_api_key_public.pem
+```
+
+The upload prints the key fingerprint. The private key must not have a passphrase.
+
+</Step>
+<Step>
+
+### State bucket and S3 compatibility key
+
+OrkStage never creates the state bucket. Buckets reached through the S3 compatibility API must be
+in the compartment designated for it (the root compartment unless you changed it with
+`oci os ns update-metadata`).
+
+```sh
+oci os ns get                                                # your Object Storage namespace
+oci os bucket create --compartment-id <S3 designated compartment OCID> \
+  --name orkstage-state --versioning Enabled
+oci iam customer-secret-key create --user-id <user OCID> --display-name orkstage-state
+```
+
+The customer secret key output has an `id` (the access key id) and a `key` (the secret access
+key, shown only once).
+
+</Step>
+<Step>
+
+### Shared vault (optional)
+
+```sh
+oci kms management vault create --compartment-id <compartment OCID> --display-name orkstage --vault-type DEFAULT
+oci kms management key create --compartment-id <compartment OCID> --display-name orkstage \
+  --key-shape '{"algorithm":"AES","length":32}' --protection-mode SOFTWARE \
+  --endpoint <vault management endpoint>
+```
+
+Put the vault and key OCIDs in `vaultOcid` and `keyOcid`.
+
+</Step>
+</Steps>
+
+Validation checks the configuration format, signs a request that reads the compartment (the
+compartment name becomes the target identity) and checks that the state bucket answers.
+
+### Permissions
+
+Policies for the group of the API user, with `<c>` the target compartment:
+
+```text
+Allow group OrkStage to read compartments in tenancy
+Allow group OrkStage to manage virtual-network-family in compartment <c>
+Allow group OrkStage to manage compute-container-family in compartment <c>
+Allow group OrkStage to manage load-balancers in compartment <c>
+Allow group OrkStage to manage postgres-db-systems in compartment <c>
+Allow group OrkStage to manage postgres-backups in compartment <c>
+Allow group OrkStage to manage postgres-configurations in compartment <c>
+Allow group OrkStage to read postgres-work-requests in compartment <c>
+Allow group OrkStage to manage redis-family in compartment <c>
+Allow group OrkStage to manage object-family in compartment <c>
+Allow group OrkStage to manage vaults in compartment <c>
+Allow group OrkStage to manage keys in compartment <c>
+Allow group OrkStage to manage secret-family in compartment <c>
+Allow service objectstorage-<region> to manage object-family in compartment <c>
+```
+
+The state bucket also needs `manage objects` for the group in the S3 designated compartment. The
+last statement is needed only for bucket expiry rules (`retentionDays`). With a shared vault,
+`use vaults` and `use keys` on that vault are enough instead of `manage`.
+
+## Regions
+
+Regions are OCI region identifiers such as `us-ashburn-1` or `sa-saopaulo-1`. Only the commercial
+realm (`oc1`, `oraclecloud.com`) is supported. Subnets are regional and span every availability
+domain, so `availabilityZones` does not change the layout. Regions with a single availability
+domain spread workloads across fault domains instead.
+
+## Actions for triggers
+
+| Capability | Action | Parameters | Effect |
+|---|---|---|---|
+| `container-instances` | `restart` | none | Restarts every container instance of the service |
+
+## Known limits
+
+- Container instances have no autoscaling. `replicas` is a fixed instance count.
+- A new image or setting replaces the container instances. New instances start before the old
+  ones stop, and the plan treats this as a routine rollout.
+- Private registry credentials are not configured. Use public images or a registry the instances
+  can reach without credentials.
+- PostgreSQL storage grows automatically, so `storageGiB` only feeds estimates. `publicAccess` is
+  not supported: endpoints are private to the VCN. High availability adds a second node on
+  regionally durable storage. The generated password is kept in OpenTofu state and in the Vault
+  secret, never in outputs.
+- OCI Cache has no password. Access is limited to the VCN, clients must use TLS, and there are at
+  most four replicas.
+- Buckets must be empty before they are deleted.
+- The load balancer listens on HTTP port 80. TLS certificates are not managed yet. In production,
+  delete protection is on.
+- State locking uses no lock file. OrkStage runs one operation per resource at a time.

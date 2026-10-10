@@ -25,9 +25,12 @@ Every instance follows the same flow:
 <Callout title="What works today" type="warn">
   OrkStage provisions real AWS resources with OpenTofu. We test this locally against
   [MiniStack](https://ministack.org), and it works on a real account through a role that OrkStage
-  assumes in that account. **Azure and OCI are simulated** by a deterministic provider and labelled
-  as simulated in every screen; real adapters are on the roadmap. The `ork` CLI is in
-  <Badge>Preview</Badge>: it works against the API, but signed binaries are not released yet.
+  assumes in that account. Azure, Google Cloud, OCI, DigitalOcean, Vultr, CoreWeave, Magalu Cloud,
+  Vercel, Render and Supabase have adapters in <Badge>Preview</Badge>: covered by tests and
+  `tofu validate`, not yet proven on live accounts (see [providers](/docs/providers/)). The
+  simulation provider imitates any of them without an account and labels its resources as
+  simulated. The `ork` CLI is in <Badge>Preview</Badge>: it works against the API, but signed
+  binaries are not released yet.
 </Callout>
 
 ## Where to go next

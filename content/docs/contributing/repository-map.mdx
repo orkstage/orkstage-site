@@ -48,7 +48,10 @@ orkstage-dev     ──git submodules──▶ every repository (pinned commits)
         <File name="templates/ (template schema, validation pipeline, built in templates)" />
         <File name="cloud-core/ (provider adapter contract, capability model and resolver, contract tests)" />
         <File name="cloud-aws/ (AWS catalog and adapter: OpenTofu, SDK health checks, AssumeRole, permissions)" />
-        <File name="cloud-mock/ (deterministic simulation provider, simulated Azure and OCI catalogs)" />
+        <File name="cloud-tofu/ (OpenTofu adapter base: state stores, backends, credentials as runner env)" />
+        <File name="cloud-azure/, cloud-gcp/, cloud-oci/, cloud-digitalocean/, cloud-vultr/, cloud-coreweave/, cloud-magalu/ (OpenTofu adapters)" />
+        <File name="cloud-vercel/, cloud-render/, cloud-supabase/ (platform adapters over REST APIs)" />
+        <File name="cloud-mock/ (deterministic simulation provider; imitates any provider's real catalog)" />
         <File name="iac/ (OpenTofu runner: throwaway containers, JSON output, cancellation)" />
         <File name="provisioning/ (compiler, policies, cost, plan diff, provider plans, DAG executor, workflow)" />
         <File name="authorization/ (CASL abilities shared by the API and the console)" />

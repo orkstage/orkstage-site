@@ -1,0 +1,147 @@
+---
+title: Vultr
+description: Connect a Vultr account with an API key, prepare the Object Storage state bucket, and see how OrkStage runs containers, databases and load balancers on Vultr.
+---
+
+<Callout title="Preview" type="warn">
+  The Vultr adapter is covered by unit tests and its OpenTofu modules pass `tofu validate`. It has
+  not been verified against a live account yet.
+</Callout>
+
+OrkStage creates Vultr resources with OpenTofu (provider `vultr/vultr` `~> 2.30`, verified with
+2.33.1) from the modules in `orkstage-modules/modules/vultr`. Each resource has its own state file
+in an Object Storage bucket of your account. Vultr has no serverless containers, so a container
+service runs as Docker on cloud compute instances.
+
+## What OrkStage creates
+
+| Template resource | Capability | What gets created |
+|---|---|---|
+| `network` | `vpc` (default) | One VPC, a /20 in 10.0.0.0/8 |
+| `compute.container-service` | `instance-docker` (default) | One cloud compute instance per replica running the image with Docker, and a firewall group |
+| `database.postgresql` | `managed-postgres` (default) | Managed PostgreSQL in the VPC. `secret_ref` is `vultr-db://<id>`. |
+| `cache.redis` | `managed-valkey` (default) | Managed Valkey, Redis compatible, TLS. `secret_ref` is `vultr-db://<id>`. |
+| `object-storage` | `object-storage` (default) | One Object Storage subscription and one bucket. `secret_ref` is `vultr-objstore://<id>`. |
+| `ingress` | `load-balancer` (default) | One Vultr load balancer in the VPC for one service |
+
+### Container service
+
+Each replica is an Ubuntu 24.04 instance on the cheapest `vc2` plan that fits `cpu` and
+`memoryMiB` (override with `overrides.vultr.plan`). Cloud init installs Docker and runs the
+image with the service environment, `--memory` and `--cpus` limits, and the port published. A
+firewall group opens the port to the VPC, and to everyone only when the service is public and no
+load balancer routes to it. Changing the image, the environment or the plan replaces the
+instances, new ones first.
+
+Credentials of Vultr databases and object storage the service depends on are added to the
+container environment as `<ID>_URL`, `<ID>_USERNAME`, `<ID>_PASSWORD`, `<ID>_ACCESS_KEY_ID` and
+`<ID>_SECRET_ACCESS_KEY`. They travel in the instance user data, which every administrator of the
+Vultr account can read, and they are kept in the OpenTofu state. Set
+`overrides.vultr.injectCredentials: false` to turn this off; the service then receives
+`<ID>_CREDENTIALS_REF` only.
+
+### Databases
+
+Before each apply, the plan is looked up in `GET /v2/databases/plans`: the cheapest plan for the
+engine and region with at least the memory of the size (`micro` 1 GB, `small` 2 GB, `medium` 4 GB,
+`large` 8 GB, `xlarge` 16 GB) and the right node count. PostgreSQL high availability adds a
+standby; cache replicas add standbys, up to 3 nodes. The chosen plan is kept while the size does
+not change. Override with `overrides.vultr.plan`, `engineVersion` (Valkey defaults to `7`)
+and `timeZone`. Without `publicAccess`, only the VPC range is trusted.
+
+`readSecret` answers `vultr-db://<id>` and `vultr-objstore://<id>` from the Vultr API (the public
+host when there is one), so a frontend on another provider can be wired to them.
+
+### Ingress
+
+A Vultr load balancer has no path routing and one health check for all attached instances, so an
+ingress serves exactly one service: HTTP on port 80 to the service port over the VPC, with the
+service `healthCheckPath`. Routes to more than one service, or a `pathPrefix` other than `/`, fail
+validation; create one ingress per service. TLS needs a domain that already points at the load
+balancer (`overrides.vultr.autoSslDomain`). Without it the load balancer serves HTTP only.
+
+## Target configuration
+
+| `config` field | Required | Example | Meaning |
+|---|---|---|---|
+| `stateBucket` | yes | `orkstage-state-acme` | Bucket that holds OpenTofu state. It must exist. |
+| `stateEndpoint` | yes | `ewr1.vultrobjects.com` | Object Storage hostname of the subscription that owns the bucket, without `https://` |
+
+## Credential secret
+
+```json
+{
+  "apiKey": "<Vultr API key>",
+  "stateAccessKeyId": "<Object Storage access key of the state subscription>",
+  "stateSecretAccessKey": "<Object Storage secret key of the state subscription>"
+}
+```
+
+The runner receives them as `VULTR_API_KEY`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` for
+one command. Validation calls `GET /v2/account` and shows the account name as the identity.
+
+### Permissions
+
+Use the API key of a Vultr user with these permissions: Manage Servers, Manage Firewall, Manage
+Load Balancers, Manage Object Storage and Manage Managed Databases. If the key has an access
+control list of allowed IP addresses, add the addresses of the OrkStage worker and runner.
+
+## Prepare state storage
+
+Create one Object Storage subscription for state and a versioned bucket in it. With the Vultr API
+(the key is read from your shell, never pasted into files):
+
+```sh
+# Clusters and their hostnames; pick one in your region with deploy = yes.
+curl -s -H "Authorization: Bearer $VULTR_API_KEY" https://api.vultr.com/v2/object-storage/clusters
+# Tiers offered by that cluster.
+curl -s -H "Authorization: Bearer $VULTR_API_KEY" https://api.vultr.com/v2/object-storage/clusters/9/tiers
+# The subscription.
+curl -s -X POST -H "Authorization: Bearer $VULTR_API_KEY" -H "Content-Type: application/json" \
+  -d '{"cluster_id": 9, "tier_id": 5, "label": "orkstage-state"}' https://api.vultr.com/v2/object-storage
+# Hostname and keys of the subscription (store the keys in your secret store).
+curl -s -H "Authorization: Bearer $VULTR_API_KEY" https://api.vultr.com/v2/object-storage/<id>
+```
+
+Then create the bucket with any S3 client, using the subscription keys:
+
+```sh
+aws s3api create-bucket --bucket orkstage-state-acme --endpoint-url https://ewr2.vultrobjects.com
+aws s3api put-bucket-versioning --bucket orkstage-state-acme \
+  --versioning-configuration Status=Enabled --endpoint-url https://ewr2.vultrobjects.com
+```
+
+State locking with a lock file is off: conditional writes are not confirmed on Vultr Object
+Storage, and OrkStage already runs one operation per resource at a time.
+
+## Regions
+
+Regions are Vultr region ids such as `ewr`, `ord`, `sao`, `fra` or `ams`. Not every service is in
+every region:
+
+| Service | Regions |
+|---|---|
+| Managed databases | `ams`, `atl`, `blr`, `bom`, `cdg`, `dfw`, `ewr`, `fra`, `icn`, `itm`, `jnb`, `lax`, `lhr`, `mad`, `man`, `mel`, `mex`, `mia`, `nrt`, `ord`, `scl`, `sea`, `sgp`, `sjc`, `sto`, `syd`, `tlv`, `waw`, `yto` |
+| Load balancers | `ams`, `atl`, `blr`, `bom`, `cdg`, `del`, `dfw`, `ewr`, `fra`, `hnl`, `icn`, `itm`, `jnb`, `lax`, `lhr`, `mad`, `man`, `mel`, `mex`, `mia`, `nrt`, `ord`, `scl`, `sea`, `sgp`, `sjc`, `sto`, `syd`, `tlv`, `waw`, `yto` |
+| Object Storage | `ams`, `atl`, `blr`, `del`, `ewr`, `lax`, `lhr`, `mxp`, `nrt`, `ord`, `sea`, `sgp`, `sjc`, `syd` |
+
+## Actions for triggers
+
+| Capability | Action | Parameters | Effect |
+|---|---|---|---|
+| `instance-docker` | `restart` | none | Reboots every instance of the service; Docker starts the container again |
+
+## Known limits
+
+- No autoscaling: the service runs `max(replicas, autoscaling.minReplicas)` instances.
+- The image must be pullable without registry credentials.
+- During a rollout, the load balancer receives the new instances only after the apply finishes.
+- No availability zones and no NAT gateway: `availabilityZones` and `natGateway` are ignored, and
+  instances keep a public address for egress (inbound closed by the firewall group).
+- Database storage is fixed by the plan (`storageGiB` is not applied). Backups are daily and
+  managed by Vultr.
+- Object Storage tiers are performance tiers: `tier`, `retentionDays` and `publicAccess` are not
+  applied, and each resource is a billed subscription.
+- Vultr has no deletion protection. Production deletes rely on OrkStage approvals.
+- There is no log API for instances, so the console shows no service logs.
+- Vultr Kubernetes Engine is not supported.
