@@ -7,4 +7,4 @@
 3:[["children",{"s":{"n":"slug","t":"oc","k":"developer/api-reference/cloud/get-cloud-targets-id-capabilities","s":[]},"h":64,"c":"$Q4"}]]
 2:[["children",{"s":"docs","h":32,"c":"$Q3"}]]
 1:[["children",{"s":"(en)","h":112,"c":"$Q2"}]]
-0:{"b":"oinEaIfHOyrsp0MLuQMzP","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"c5xTZdQ7lTQuMwqt4AFe7","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
