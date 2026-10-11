@@ -6,8 +6,6 @@
 import { readdirSync, renameSync, rmSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
-if (process.platform !== 'win32') process.exit(0);
-
 const OUT = 'out';
 let moved = 0;
 
