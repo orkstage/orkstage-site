@@ -63,6 +63,8 @@ does not exist yet.
 | Variable | Type | Default | Description |
 |---|---|---|---|
 | `WORKER_CONCURRENCY` | integer from 1 to 64 | `4` | Deployment jobs one worker processes in parallel. |
+| `DEPLOY_LIMIT_PER_TENANT` | integer, `0` for no limit | `5` | Deployments of one tenant running at once, across all workers. Others wait in the queue. |
+| `DEPLOY_LIMIT_PER_PROVIDER_REGION` | integer, `0` for no limit | `20` | Deployments touching one provider region at once, across all workers. Each cloud target also has its own limit. |
 | `HEALTH_CHECK_INTERVAL_SECONDS` | integer, at least 10 | `30` | Interval between health monitor ticks. |
 | `DRIFT_CHECK_INTERVAL_MINUTES` | integer, at least 0 | `360` | Interval between drift scans on real providers (one OpenTofu plan per applied resource). `0` turns scans off. |
 | `TOFU_IMAGE` | string | `ghcr.io/opentofu/opentofu:1.12.7` | Image for runner containers. |
