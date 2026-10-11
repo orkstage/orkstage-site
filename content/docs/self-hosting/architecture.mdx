@@ -20,7 +20,7 @@ Web console (Next.js)  ──/api rewrite──▶  Control API (NestJS + Fastif
                                             │
                                   Adapter registry (cloud-core)
                          ┌──────────────┬───────────────┬──────────────────┐
-                       AWS            Mock (sim)      Azure, OCI, GCP (not yet)
+                       AWS            Mock (sim)      Other providers (Preview)
                         │
                OpenTofu runner (throwaway containers, one state per resource)
 ```
@@ -86,8 +86,8 @@ adapter.
 |---|---|
 | AWS (`cloud-aws`) | Real. Provisions with OpenTofu, checks health with the AWS SDK, reads CloudWatch logs and assumes a role in each connected account. |
 | Mock (`cloud-mock`) | Deterministic simulation of AWS, Azure or OCI, chosen per target, with injectable failures, latency, health overrides and drift. Everything it creates is labeled simulated. |
-| Azure, OCI | No real adapter yet. Their capability catalogs exist for simulation and planning. |
-| GCP | Not yet. No adapter and no capability catalog. |
+| Azure, Google Cloud, OCI, DigitalOcean, Vultr, CoreWeave, Magalu Cloud (`cloud-<provider>`) | Preview. OpenTofu adapters covered by tests and `tofu validate`, not yet proven on live accounts. Off by default behind a feature flag per provider. See [providers](/docs/providers/). |
+| Vercel, Render, Supabase | Preview. Adapters that call the platform APIs, behind the same flags. |
 
 ## Desired, known and actual state
 
