@@ -1414,6 +1414,295 @@
         ]
       }
     },
+    "/api/v1/tenants/{tenantId}/members": {
+      "get": {
+        "operationId": "TeamController_team",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/invitations": {
+      "post": {
+        "operationId": "TeamController_invite",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "CustomerOwner",
+                      "CustomerAdmin",
+                      "CustomerDeveloper",
+                      "CustomerViewer"
+                    ]
+                  }
+                },
+                "required": [
+                  "email",
+                  "role"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/invitations/{id}": {
+      "delete": {
+        "operationId": "TeamController_revoke",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/members/{userId}": {
+      "patch": {
+        "operationId": "TeamController_updateRole",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "CustomerOwner",
+                      "CustomerAdmin",
+                      "CustomerDeveloper",
+                      "CustomerViewer"
+                    ]
+                  }
+                },
+                "required": [
+                  "role"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tenants"
+        ]
+      },
+      "delete": {
+        "operationId": "TeamController_remove",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/invitations/{token}": {
+      "get": {
+        "operationId": "TeamController_preview",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/api/v1/invitations/{token}/accept": {
+      "post": {
+        "operationId": "TeamController_accept",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
     "/api/v1/instances": {
       "get": {
         "operationId": "InstancesController_list",

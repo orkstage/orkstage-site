@@ -23,11 +23,31 @@ roles** apply per tenant, so one user can be an admin in one tenant and a viewer
 | Deploy and restart instances | ✓ | ✓ | ✓ | |
 | Import IaC | ✓ | ✓ | ✓ | |
 | Create, update, scale, destroy and approve instances | ✓ | ✓ | | |
-| Read members and the audit log | ✓ | ✓ | | |
+| See the team (members and pending invitations) | ✓ | ✓ | ✓ | ✓ |
+| Read the audit log | ✓ | ✓ | | |
 | Manage API keys and webhooks | ✓ | ✓ | | |
-| Manage members, update the tenant | ✓ | | | |
+| Invite people, change roles, remove members, update the tenant | ✓ | | | |
 
 Tenant roles never get access to cloud targets, settings or template publishing.
+
+## Team and invitations
+
+**Settings > Team** lists the members of a tenant with their roles, and the invitations still
+pending. Owners (and platform staff) invite people by email with a role:
+
+- The person receives an email with a link that works once and expires after 7 days. The inviter
+  also sees the link once, to share it directly if the email does not arrive.
+- They accept it signed in with the invited address; another account is refused. If they sign in
+  through SSO for the first time with that address, the account is created with the invitation's
+  membership.
+- Inviting the same address again replaces the previous link. Owners can revoke an invitation.
+
+Owners change roles and remove members; anyone can leave a tenant. A tenant always keeps at least
+one owner, so the last owner cannot be demoted or removed until someone else is an owner. Every
+invitation, acceptance, role change and removal is in the audit log.
+
+The API is `GET /tenants/{id}/members`, `POST /tenants/{id}/invitations`,
+`PATCH` and `DELETE /tenants/{id}/members/{userId}`, and `POST /invitations/{token}/accept`.
 
 ## How it is enforced
 
