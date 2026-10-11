@@ -2,6 +2,11 @@
 # This file stops pnpm from treating site/ as part of the platform monorepo at the parent level.
 packages: []
 
+# A flat node_modules (like npm) instead of symlinks into node_modules/.pnpm. Hostinger's Node.js
+# web apps copy the standalone server with its symlinks resolved, which leaves `next` unable to
+# find its own dependencies (`Cannot find module '@swc/helpers/...'`). A flat tree has no links.
+nodeLinker: hoisted
+
 # Supply chain: build scripts are allow-listed, nothing else runs at install time.
 allowBuilds:
   esbuild: true

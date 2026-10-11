@@ -32,7 +32,7 @@ flowchart LR
 
 ## Quickstart
 
-Requirements: Node 24+ and pnpm 12. This directory is its own pnpm workspace.
+Requirements: Node 24+ and pnpm 11 (pinned in `packageManager`). This directory is its own pnpm workspace.
 
 ```bash
 pnpm install
@@ -79,35 +79,45 @@ ORKSTAGE_API_URL=https://api.example.com pnpm openapi:refresh
 - "Edit this page" links point to `github.com/orkstage/orkstage-site/blob/main/content/docs/`.
 - Run `pnpm check:prose` before opening a pull request.
 
-## Deploying (Hostinger)
+## Deploying
 
-The site is a static export (`output: 'export'`): `pnpm run build` writes plain HTML, CSS and JS to
-`out/`, and nothing runs on the server. [`public/.htaccess`](public/.htaccess) ships with the export
-and configures LiteSpeed: HTTPS and apex redirects, directory pages, the 404 page, security headers,
-a year of caching for hashed assets and compression. Two ways to publish it on Hostinger:
+The same pages build in two modes, chosen in [`next.config.mjs`](next.config.mjs). Every route is
+prerendered at build time in both.
 
-### Option A: Hostinger builds `main` (Node.js web app)
+| Mode | When | Result |
+|---|---|---|
+| `export` | Default (CI, `pnpm build`) | Plain files in `out/`. [`public/.htaccess`](public/.htaccess) ships with them and configures LiteSpeed on Hostinger: HTTPS and apex redirects, directory pages, the 404 page, security headers, caching and compression. |
+| `server` | Vercel (detected), or `SITE_OUTPUT=server` | A Next.js server. The security headers and the `www` redirect come from `next.config.mjs` instead of `.htaccess`. |
 
-Use these build settings; the defaults Hostinger detects for Next.js (server app, output `.next`)
-do not fit a static export:
-
-| Setting | Value |
-|---|---|
-| Branch | `main` |
-| Node.js version | 24 |
-| Package manager | pnpm |
-| Build command | `pnpm run build` |
-| Output directory | `out` |
-| Framework or application type | static site (Other) |
+The site uses a flat `node_modules` (`nodeLinker: hoisted` in `pnpm-workspace.yaml`). Hosts that
+copy the standalone server with its symlinks resolved, as Hostinger does, otherwise break `next`
+at runtime with `Cannot find module '@swc/helpers/...'`.
 
 `packageManager` pins pnpm 11 on purpose: Hostinger installs through corepack (0.34 on Node 24.6),
 which cannot start pnpm 12. Keep pnpm 11 here until Hostinger ships a newer corepack.
 
-### Option B: Hostinger serves the `hostinger` branch (no build on Hostinger)
+### Hostinger, option A: Node.js web app that builds `main`
+
+Hostinger's Node.js web apps always run Next.js as a server: they import `next.config.mjs` and
+replace `output` with `'standalone'`, whatever the file says. Settings in hPanel:
+
+| Setting | Value |
+|---|---|
+| Branch | `main` |
+| Framework or application type | Next.js |
+| Node.js version | 24 |
+| Package manager | pnpm |
+| Build script | `build` |
+| Output directory | `.next` |
+| Environment variable | `SITE_OUTPUT=server` (security headers and the `www` redirect) |
+
+Never set `distDir` in `next.config.mjs`: Hostinger looks for the server in `.next`.
+
+### Hostinger, option B: static files from the `hostinger` branch (no build on Hostinger)
 
 CI builds the static export on every push to `main` and, when the build and every check pass,
 commits `out/` to the `hostinger` branch (job `publish-hostinger`). Hostinger pulls the branch into
-`public_html`.
+`public_html`. No Node.js process runs; this is the cheapest and most predictable option.
 
 One time setup in hPanel (Websites > Manage > Advanced > GIT):
 
@@ -124,6 +134,23 @@ One time setup in hPanel (Websites > Manage > Advanced > GIT):
 
 To deploy by hand, run the CI workflow on `main` from the Actions tab. To roll back, revert the
 change on `main`; the next build deploys the previous content.
+
+Use one option per domain. Moving from A to B means deleting the Node.js web app first, so that it
+stops answering for the domain.
+
+### Vercel (prepared, not in use)
+
+[`vercel.json`](vercel.json) is ready; nothing deploys there until a project is created. To use it:
+
+1. Import `orkstage/orkstage-site` in Vercel. The framework (Next.js), install and build commands
+   come from `vercel.json`; leave the root directory empty.
+2. Add the environment variable `ENABLE_EXPERIMENTAL_COREPACK=1` (all environments), so Vercel uses
+   the pnpm version from `packageManager`, and pick Node.js 24 under Settings > Build and
+   Deployment.
+3. Deploy. Vercel sets `VERCEL=1`, so the build uses the server mode on its own; preview
+   deployments for pull requests come for free.
+4. To move `orkstage.io`, add the domain in the project and follow the DNS records Vercel shows.
+   Turn off the Hostinger deployment first so only one host answers.
 
 The OpenTofu in [`infra/`](infra/) describes an alternative on AWS (S3 and CloudFront); it is not
 applied.
