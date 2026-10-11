@@ -8,4 +8,4 @@
 3:[["children",{"s":{"n":"slug","t":"oc","k":"developer/api-reference/templates/get-templates-id","s":[]},"h":64,"c":"$Q4"}]]
 2:[["children",{"s":"docs","h":32,"c":"$Q3"}]]
 1:[["children",{"s":"(en)","h":112,"c":"$Q2"}]]
-0:{"b":"G2Bc0pWvIfCsdyM9RDiov","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"2qRyWDS1NB5No8HGCZAbC","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
