@@ -22,6 +22,8 @@ Booleans accept `true`, `false`, `1` or `0`.
 | `WEB_PUBLIC_URL` | URL | `http://localhost:3000` | Public URL of the console. OIDC redirect URIs are built from it. |
 | `SESSION_SECRET` | string, at least 32 characters | **required** | Signs the session cookie and the OIDC flow cookie. In production it must not start with `change-me`. |
 | `LOG_LEVEL` | `trace`, `debug`, `info`, `warn`, `error` or `fatal` | `info` | Pino log level. Tokens, secrets, cookies and authorization headers are always redacted. |
+| `TRUST_PROXY_HOPS` | integer, 0 to 5 | `1` | Reverse proxies in front of the API that add the client address to `X-Forwarded-For`. The console's `/api` proxy counts as one. The client address (rate limits, audit) is read that many hops back, so clients cannot set it. See [rate limits behind proxies](#rate-limits-behind-proxies). |
+| `API_DOCS_ENABLED` | boolean | `true`, or `false` when `NODE_ENV=production` | Serves the OpenAPI document and Swagger UI at `/api/docs`. |
 
 ## Authentication
 
@@ -31,6 +33,7 @@ Booleans accept `true`, `false`, `1` or `0`.
 | `OIDC_<KEY>_ISSUER` | URL | | Issuer of an OIDC provider. `<KEY>` is any name in uppercase letters and digits. |
 | `OIDC_<KEY>_CLIENT_ID` | string | | Client id registered at that provider. |
 | `OIDC_<KEY>_CLIENT_SECRET` | string | | Client secret for that client id. |
+| `SESSION_IDLE_MINUTES` | integer, 5 to 1440 | `120` | A session unused for this long ends, even before its absolute limit of 12 hours. |
 
 ### Single sign on (OIDC)
 
@@ -90,7 +93,22 @@ does not exist yet.
 | `ENCRYPTION_KEY` | base64, 32 bytes | | Encrypts secrets the platform must read back, such as webhook signing secrets. **Required in production.** Generate it with `openssl rand -base64 32`. |
 | `WEBHOOK_ALLOW_PRIVATE` | boolean | `false` | Allows `http://` webhook URLs and URLs on private networks. For local development only; **refused in production**. |
 
+`env://` references cannot read the platform's own configuration (`DATABASE_URL`, `REDIS_URL`,
+`SESSION_SECRET`, `ENCRYPTION_KEY`, `ORKSTAGE_LICENSE_KEY` and anything starting with `OIDC_`,
+`SMTP_`, `AWS_`, `TOFU_`, `API_`, `WEB_`, `APP_` or `NODE_`). Give target credentials their own
+names, for example `ORK_AZURE_CREDENTIALS`.
+
 See [Secret references](/docs/self-hosting/secrets/).
+
+## Rate limits behind proxies
+
+Rate limit counters live in Redis, so they hold across every API instance. Signed in requests are
+counted per session or API key. Sign in routes are counted per client address, which is only as
+trustworthy as the proxy that records it: put a load balancer or reverse proxy that appends the
+client address to `X-Forwarded-For` (an AWS ALB, nginx with `proxy_add_x_forwarded_for`) in front
+of the console, and leave `TRUST_PROXY_HOPS` at `1`. The console's own proxy passes an incoming
+`X-Forwarded-For` through unchanged, so without such a proxy a client can pick the address the API
+sees for sign in limits. If the API is exposed directly, set `TRUST_PROXY_HOPS=0`.
 
 ## Licensing and observability
 

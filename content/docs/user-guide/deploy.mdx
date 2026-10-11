@@ -9,7 +9,7 @@ steps and answers at once with `202`. The worker then does the work, so you can 
 ## Phases
 
 ```text
-validate → targets → plan → [approval] → resources (DAG) → rollout → configure → verify → observability → finalize
+validate → targets → plan → [approval] → resources (DAG) → prune → rollout → configure → verify → observability → finalize
 ```
 
 | Phase | What happens |
@@ -19,6 +19,7 @@ validate → targets → plan → [approval] → resources (DAG) → rollout →
 | Generate plan | Builds the platform diff, plus a real `tofu plan` for each existing resource that changes. |
 | Approval | Runs only for high risk production changes (see below). Otherwise it is skipped, with the reason. |
 | Resources | One step per resource, in dependency order. Independent branches run in parallel. |
+| Remove resources no longer in the template | Deletes resources the instance still has but the template no longer contains (after an upgrade, or a resource turned off by a variable), dependents first. The plan lists them as deletions, so production approval covers them. A destroy protected instance keeps them, with a warning. |
 | Application rollout | Services run their images by digest, so the exact image never changes under them. |
 | Configure secrets and connections | Wires connection references. Secret values stay in the secret store. |
 | Health and connectivity verification | Checks each resource until it is healthy, within one settle window. |
@@ -76,8 +77,15 @@ waiting for it to settle. The next deployment creates it again.
 
 ## Upgrading the template
 
-**Upgrade template** moves the instance to another published version of its template. Review the
-new plan, then deploy. An instance never changes version on its own.
+**Change template version** shows the plan from what runs now to the chosen version (what is
+created, updated and deleted), then starts a deployment of that version. The instance keeps its
+current version until that deployment succeeds, so a failed upgrade leaves it on the version that
+actually runs; **Retry** continues the upgrade. Choosing an older version rolls back the same way.
+Production upgrades that delete or replace resources wait for approval. An instance never changes
+version on its own.
+
+Through the API: `POST /instances/{id}/preview?templateVersionId={version}` returns the plan, and
+`POST /instances/{id}/upgrade` with `{ "templateVersionId": "..." }` starts the deployment.
 
 ## Destroying
 
@@ -89,7 +97,8 @@ validate → backup → plan → [approval] → resources (reverse DAG) → clea
 
 To confirm, you type the instance slug. An instance marked *Destroy protected* refuses to be
 destroyed. Only customer owners and admins, and platform owners and admins, can destroy an
-instance.
+instance. Destroying a `production` instance also waits for an approval before anything is
+deleted; cancelling it at that point leaves the instance `READY`.
 
 <Callout type="warn">
   The backup phase checks that a backup policy exists. It does not yet verify that a backup can be

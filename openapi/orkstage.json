@@ -1672,6 +1672,14 @@
             }
           },
           {
+            "name": "templateVersionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "x-orkstage-csrf",
             "in": "header",
             "required": false,
