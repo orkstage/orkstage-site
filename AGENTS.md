@@ -5,8 +5,10 @@ Guide for AI coding agents and the developers working with them.
 ## What this repository is
 
 orkstage.io: the marketing site (English and Brazilian Portuguese) and the documentation
-(English), built with Next.js 16 and Fumadocs as a **static export** (`output: 'export'`, written
-to `out/`). Nothing runs on a server; Hostinger serves the files with `public/.htaccess`.
+(English), built with Next.js 16 and Fumadocs. Every page is prerendered at build time: by default
+as a **static export** (`out/`, served with `public/.htaccess`), or as a Next.js server on Vercel
+and Hostinger's Node.js web apps (see Deploying). Keep pages free of request time code so both
+modes keep working.
 
 | Path | What lives there |
 |---|---|
@@ -55,9 +57,12 @@ These apply to every page, in both languages:
 
 ## Deploying
 
-CI builds on every push to `main` and, when green, commits `out/` to the `hostinger` branch.
-Hostinger either serves that branch (no build there) or builds `main` itself with output directory
-`out` and a static site type; see the README.
+Two build modes in `next.config.mjs`: `export` (default, static files in `out/`) and `server`
+(Vercel, or `SITE_OUTPUT=server`). CI builds on every push to `main` and, when green, commits
+`out/` to the `hostinger` branch for Hostinger's static Git deployment. Hostinger's Node.js web app
+instead builds `main` as a standalone server with output directory `.next`; never set `distDir`,
+and keep `nodeLinker: hoisted` (pnpm symlinks break Hostinger's copy of the server). Vercel is
+prepared in `vercel.json` but not in use. Details in the README.
 
 ## Git workflow
 
