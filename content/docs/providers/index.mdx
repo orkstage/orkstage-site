@@ -69,8 +69,13 @@ provider's flag is off:
 - destroying an instance always works, so turning a provider off never strands resources;
 - simulation targets can still imitate it, which is the way to try a template without an account.
 
+A plan can also turn flags on for every tenant on it: list them in the plan's `featureFlags`
+entitlement (for example `["PROVIDER_AZURE"]` on SCALE). For one tenant, the value comes from the
+first of these that is set: the tenant's own value, the platform value, the tenant's plan, the
+default. A platform value therefore still switches a provider off for everyone.
+
 A platform owner changes flags in the console under **Settings > Feature flags**, for the whole
-platform or for one tenant (a tenant value wins over the platform value), or through the API:
+platform or for one tenant, or through the API:
 
 ```bash
 # Enable Azure for one tenant only
