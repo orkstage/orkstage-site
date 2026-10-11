@@ -42,8 +42,8 @@ description: Security controls built into OrkStage, a hardening checklist for ho
 
 ## Known gaps
 
-- MFA policy, a console page that lists and revokes sessions, and a flow for accepting invitations.
-- Dependency and container image scanning in CI.
+- MFA policy, and a console page that lists and revokes sessions.
+- Container image scanning in CI (the dependency audit already blocks merges on high severity advisories).
 - Postgres row level security as an extra isolation layer.
 - An OpenTofu runner that does not need the Docker socket (ECS RunTask or a Kubernetes Job).
 
