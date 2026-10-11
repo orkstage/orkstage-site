@@ -11,6 +11,7 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   output: 'export',
+  distDir: 'out',
   trailingSlash: true,
   reactStrictMode: true,
   poweredByHeader: false,
