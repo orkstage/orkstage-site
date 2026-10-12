@@ -91,6 +91,60 @@ Create the key with the **ork CLI (developer)** preset: `instances:read`, `insta
 `ork template push` works only with an organization key (role `PlatformAdmin`). See
 [API keys](/docs/developer/api-keys/).
 
+## From an empty directory
+
+A run against a local platform (`pnpm platform:up` in `orkstage-dev`) with the seeded simulation
+targets. Output is shortened.
+
+```bash
+mkdir shop && cd shop
+ork init --tenant acme --environment development --name shop -y
+# Template: nothing deployable was detected, so .ork/template.yaml is a starter (one web service).
+# Created /home/me/shop/.ork/ with config.toml, template.yaml, inventory.json and .gitignore.
+```
+
+`ork init` leaves one line per placement slot to fill in `.ork/config.toml`:
+
+```toml title=".ork/config.toml"
+[placements]
+primary = { target = "Simulated AWS — us-east-1", region = "us-east-1" }
+```
+
+```bash
+ork up --publish --yes --wait
+# Pushed template shop@0.1.0 (draft).
+# Published shop@0.1.0.
+# Created instance shop-development from shop@0.1.0.
+# [phase:verify] All health and connectivity checks passed.
+# [phase:finalize] Instance is READY.
+# Deployment 01a12dd9-82d0-... succeeded.
+
+ork status
+# Status: READY   Health: HEALTHY
+# Template: shop@0.1.0   Tenant: Acme Corp
+```
+
+Change the template, then publish and roll it out:
+
+```bash
+ork template push && ork template publish
+ork preview --template-version 0.1.1
+# Plan: 0 to create, 0 to update, 1 to delete, 2 unchanged (risk high)
+ork upgrade --yes --wait
+# [phase:prune] Deleting cache (no longer in the template)
+# [phase:prune] 1 resource(s) removed: cache.
+# Deployment 01a12e13-742b-... succeeded.
+```
+
+Day to day: `ork logs api`, `ork triggers run restart-api --wait` and `ork incidents list`. When
+the instance is no longer needed:
+
+```bash
+ork destroy --instance shop-development --confirm shop-development --wait
+```
+
+Production destroys wait for approval in the console; the CLI prints the link.
+
 ## Commands
 
 | Command | What it does |
