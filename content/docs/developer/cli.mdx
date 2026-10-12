@@ -4,8 +4,9 @@ description: The ork CLI (Preview). Install it, log in with an API key, scan a p
 ---
 
 <Callout title="Preview" type="warn">
-  `ork` works against the OrkStage API today, but there are no signed binaries yet. Build it from
-  source or run it in Docker. Commands and output may still change.
+  Commands and output may still change. Release binaries are signed once the signing certificates
+  are configured; until then they are unsigned, so machines that block unsigned programs need the
+  Docker option below.
 </Callout>
 
 `ork` turns an existing project into an OrkStage template, pushes it, and deploys and operates
@@ -15,7 +16,25 @@ Serverless, Bicep and ARM projects. The CLI is written in Rust and licensed unde
 
 ## Install
 
-<Tabs items={['From source', 'Docker']}>
+<Tabs items={['Install script', 'From source', 'Docker']}>
+<Tab value="Install script">
+
+The scripts download the latest release for your machine, verify it against the release's
+`SHA256SUMS` and install it without administrator rights.
+
+```bash title="Linux, macOS"
+curl -fsSL https://orkstage.io/install.sh | sh     # installs to ~/.local/bin
+```
+
+```powershell title="Windows"
+irm https://orkstage.io/install.ps1 | iex          # installs to %LOCALAPPDATA%\Programs\ork
+```
+
+Pin a version with `ORK_VERSION=0.1.0`, or choose the directory with `ORK_INSTALL_DIR`. Every
+release on [GitHub](https://github.com/orkstage/orkstage-cli/releases) also has the archives and
+`SHA256SUMS` for a manual install.
+
+</Tab>
 <Tab value="From source">
 
 You need Rust 1.88 or newer.
@@ -61,13 +80,14 @@ ork login --api-url https://orkstage.example.com   # prompts for an API key (ork
 cd my-project
 ork init                                           # scans and writes .ork/
 ork scan                                           # what was detected, with evidence
-ork template validate && ork template push         # create the template or add a version
-ork deploy --wait                                  # deploys [instance].slug from .ork/config.toml
+# fill [placements] in .ork/config.toml: a cloud target and region per slot
+ork up --publish --wait                            # push, publish, create the instance, deploy
 ork status && ork logs api
 ```
 
 Create the key with the **ork CLI (developer)** preset: `instances:read`, `instances:deploy`,
-`templates:read`, `templates:write`, `imports:write`. Templates are shared by all tenants, so
+`templates:read`, `templates:write`, `imports:write`. Add `instances:write` for
+`ork instances create` and `ork up`. Templates are shared by all tenants, so
 `ork template push` works only with an organization key (role `PlatformAdmin`). See
 [API keys](/docs/developer/api-keys/).
 
@@ -84,7 +104,10 @@ Create the key with the **ork CLI (developer)** preset: `instances:read`, `insta
 | `ork template push [-f FILE]` | Creates the template, or adds a `DRAFT` version. When the local version is not newer than the server's, it bumps the patch number and updates the file. |
 | `ork template diff [-f FILE] [--exit-code]` | Prints a unified diff between the local template and the latest server version. |
 | `ork import [PATH] [--tenant]` | Scans locally and sends `POST /imports { report }`, then prints the import id and the console URL. Your code never leaves your machine. |
+| `ork template publish [-f FILE] [--template-version V]` | Publishes a draft version so instances can use it. The server validates it again. Needs permission to publish templates. |
 | `ork instances list [--tenant]` | Lists the instances you can see. |
+| `ork instances create [--name] [--template-version V] [--var KEY=VALUE]... [--yes]` | Creates the instance described in `.ork/config.toml` (`[instance]`, `[placements]`, `[variables]`) from the latest published template version. Target names need a platform role to resolve; otherwise use target ids. `--yes` is required outside a terminal. |
+| `ork up [--publish] [--yes] [--wait]` | Pushes the template when it changed (publishes it with `--publish`), creates the instance when it does not exist, then deploys. |
 | `ork deploy [--instance SLUG] [--wait] [--timeout S]` | Deploys. With `--wait` it streams the deployment events and exits with a nonzero code if the deployment fails. `--timeout` defaults to 3600 seconds. |
 | `ork status [--instance SLUG]` | Shows the instance, its resources and the last deployment. |
 | `ork logs <resource> [--instance SLUG] [-n N]` | Prints recent log lines of a resource (50 by default). |
