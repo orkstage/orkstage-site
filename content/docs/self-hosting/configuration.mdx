@@ -125,6 +125,16 @@ sees for sign in limits. If the API is exposed directly, set `TRUST_PROXY_HOPS=0
 |---|---|---|
 | `API_INTERNAL_URL` | `http://localhost:4000` | API origin (no path) that the console forwards `/api/*` to, for example `http://api:4000`. The console resolves its rewrites when it is built, so set this variable at build time. |
 
+## Seed
+
+The seed runs after migrations (the `migrate` service, or `pnpm db:seed`). It is idempotent.
+
+| Variable | Default | Description |
+|---|---|---|
+| `PLATFORM_OWNER_EMAIL` | none | Creates this user as the platform owner, or gives an existing user that role. There is no development sign in in production, so this is how the first administrator is created: they sign in with SSO using this email, which the provider must report as verified. Without it, a production seed warns that nobody can administer the platform. |
+| `ORGANIZATION_NAME` | `Organization` | Name of the organization created on the first run, when none exists. |
+| `SEED_DEMO_DATA` | `true`, except with `NODE_ENV=production` | Adds the demo: simulated cloud targets, sample images, the Acme and Globex tenants and their users. Without it, the seed writes only plans, built in and marketplace templates, the organization and the platform owner. |
+
 ## Production safety checks
 
 With `NODE_ENV=production`, startup fails when any of these is true:
