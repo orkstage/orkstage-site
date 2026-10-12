@@ -46,6 +46,12 @@ const config = {
               destination: 'https://orkstage.io/:path*',
               permanent: true,
             },
+            // The CLI install scripts are attached to every orkstage-cli release (as in .htaccess).
+            ...['install.sh', 'install.ps1'].map((file) => ({
+              source: `/${file}`,
+              destination: `https://github.com/orkstage/orkstage-cli/releases/latest/download/${file}`,
+              permanent: false,
+            })),
           ];
         },
       }),
