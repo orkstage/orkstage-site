@@ -4,12 +4,16 @@ on:
   push:
     branches: [main]
   pull_request:
+  # A manual run scans the whole history for secrets (pushes and pull requests scan only their commits).
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  # Secret scan of the whole history with gitleaks. Reviewed false positives go in .gitleaksignore.
+  # Secret scan with gitleaks: the commits of a pull request or a push, the whole history on a manual
+  # run (the full scan takes about 15 minutes here because of large generated files in the history).
+  # Reviewed false positives go in .gitleaksignore.
   secrets:
     runs-on: ubuntu-latest
     steps:
@@ -17,10 +21,13 @@ jobs:
         with:
           fetch-depth: 0
       - name: gitleaks
+        env:
+          RANGE: ${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.event.pull_request.head.sha) || github.event_name == 'push' && format('{0}..{1}', github.event.before, github.sha) || '' }}
         run: >-
           docker run --rm -v "$PWD:/repo" -w /repo
           -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0='*'
           ghcr.io/gitleaks/gitleaks:v8.24.3 git /repo --redact --no-banner --verbose
+          ${RANGE:+--log-opts=$RANGE}
 
   build:
     runs-on: ubuntu-latest
