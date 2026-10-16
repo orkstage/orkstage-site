@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
     open-pull-requests-limit: 10
     groups:
       fumadocs:
@@ -24,7 +24,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       actions:
         patterns:
@@ -34,7 +34,7 @@ updates:
   - package-ecosystem: terraform
     directory: /infra
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       minor-and-patch:
         patterns:
