@@ -6,6 +6,8 @@ export const docsRoute = '/docs';
 export const links = {
   github: 'https://github.com/orkstage/orkstage',
   githubOrg: 'https://github.com/orkstage',
+  discussions: 'https://github.com/orgs/orkstage/discussions',
+  slack: 'https://orkstage.slack.com',
   license: 'https://github.com/orkstage/orkstage/blob/main/LICENSE',
   security: '/docs/self-hosting/security/',
   contact: 'mailto:hello@orkstage.io',

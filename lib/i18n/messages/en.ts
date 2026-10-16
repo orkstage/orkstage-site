@@ -11,14 +11,14 @@ export const en = {
     title: 'OrkStage: open source multicloud control plane',
     description:
       'Describe an environment once, place each resource on the cloud that fits it, review plan, policies and cost, then deploy with OpenTofu. Open source.',
-    ogImageAlt: 'OrkStage: command every stage of your cloud. Open source multicloud control plane.',
+    ogImageAlt: 'OrkStage: orchestrate every cloud from one stage. Open source multicloud control plane.',
     notFoundTitle: 'Page not found',
     notFoundDescription: 'This address does not match any page on orkstage.io. The documentation and the home page link to everything on the site.',
   },
   og: {
-    headline: 'Command every stage of your cloud.',
+    headline: 'Orchestrate every cloud from one stage.',
     subline: 'Open source multicloud control plane. Template, plan, deploy, operate.',
-    footer: 'AWS, Azure, OCI. Raw scale. Precise control.',
+    footer: 'Open source multicloud control plane.',
   },
   common: {
     skipToContent: 'Skip to content',
@@ -48,7 +48,7 @@ export const en = {
   },
   hero: {
     eyebrow: 'Open source multicloud control plane',
-    title: 'Command every stage of your cloud.',
+    title: 'Orchestrate every cloud from one stage.',
     lead: 'Write the environment once: services, Postgres, cache, queue, storage, ingress and DNS. Bind each resource to the account and region that fits it. Review the plan, the policy results and an approximate monthly cost. Then OrkStage applies it with OpenTofu and keeps watching it.',
     primary: 'Get started',
     secondary: 'View the source on GitHub',
@@ -214,7 +214,7 @@ export const en = {
       },
       support: {
         area: 'Support',
-        community: 'GitHub Discussions',
+        community: 'GitHub Discussions and Slack',
         enterprisePlanned: 'Priority support with an SLA',
       },
     },
@@ -231,13 +231,15 @@ export const en = {
     cta: 'Read the quickstart',
   },
   footer: {
-    tagline: 'Command every stage of your cloud. Raw scale. Precise control.',
+    tagline: 'Orchestrate every cloud from one stage.',
     product: 'Product',
     documentation: 'Documentation',
     quickstart: 'Quickstart',
     apiReference: 'API reference',
     project: 'Project',
     license: 'License (AGPL-3.0)',
+    discussions: 'Discussions',
+    slack: 'Slack',
     security: 'Security',
     company: 'Company',
     enterprise: 'Enterprise',
