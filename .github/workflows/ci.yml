@@ -16,11 +16,10 @@ permissions:
   contents: read
 
 jobs:
-  # Secret scan with gitleaks: the commits of a pull request or a push, the whole history on a manual
-  # run (the full scan takes about 15 minutes here because of large generated files in the history).
-  # Reviewed false positives go in .gitleaksignore.
-  secrets:
+  build:
     runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -33,13 +32,6 @@ jobs:
           -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0='*'
           ghcr.io/gitleaks/gitleaks:v8.24.3 git /repo --redact --no-banner --verbose
           ${RANGE:+--log-opts=$RANGE}
-
-  build:
-    runs-on: ubuntu-latest
-    env:
-      NEXT_TELEMETRY_DISABLED: '1'
-    steps:
-      - uses: actions/checkout@v7
       # pnpm version comes from "packageManager" in package.json.
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
@@ -59,7 +51,8 @@ jobs:
           # out/.htaccess configures Hostinger; hidden files are skipped unless asked for.
           include-hidden-files: true
           if-no-files-found: error
-          retention-days: 7
+          # Only the deploy job of the same run reads it; artifacts count toward the storage quota.
+          retention-days: 1
 
   # Hostinger serves public_html from the `hostinger` branch (hPanel > Advanced > Git, with auto
   # deployment). After every green build of main, the exported site is committed there on top of
