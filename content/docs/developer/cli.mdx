@@ -269,8 +269,9 @@ Keys are never written to the project.
    every source. IaC evidence wins over Kubernetes, and Kubernetes wins over Compose, Dockerfiles and
    package hints.
 4. **Infer**. The scan adds a network when services or data stores need one, and an ingress plus DNS
-   for a public HTTP service on a cloud provider. It then chooses placement slots and the smallest
-   plan whose default entitlements fit.
+   for a public HTTP service on a cloud provider. It then chooses placement slots and tags the
+   template with the size of the smallest default plan it fits (`starter`, `growth` or `scale`)
+   and with what it found (`containers`, `postgres`, `object storage`).
 5. **Render and validate** the template. Problems become warnings, so the scan never fails on bad
    input.
 
