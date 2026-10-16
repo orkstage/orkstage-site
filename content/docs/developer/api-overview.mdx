@@ -147,7 +147,7 @@ accepts 600 requests per minute from one client unless it has a lower limit:
 |---|---|
 | Health | `GET /healthz`, `GET /readyz` |
 | Auth | `GET /auth/providers`, OIDC login and callback, `POST /auth/logout`, `GET /me` |
-| Tenants and plans | `GET /plans`, `GET/POST /tenants`, `GET/PATCH /tenants/:id` |
+| Tenants and their limits | `GET/POST /tenants`, `GET/PATCH /tenants/:id` |
 | Templates | `GET/POST /templates`, `GET /templates/:id`, versions, validate, publish, clone |
 | Catalog and targets | `GET /applications`, `GET /cloud/providers`, `GET/POST /cloud/targets`, validate, capabilities |
 | Instances | list, create, get, update, `preview`, `deploy`, `upgrade`, `destroy`, deployments, logs, metrics |

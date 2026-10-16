@@ -28,7 +28,7 @@ Validation runs in stages and reports every issue with its stage, severity, code
 |---|---|
 | `schema` | YAML syntax and the `platform/v1` schema (types, ranges, required fields). |
 | `semantic` | Unique ids, valid references (`dependsOn`, routes, DNS target, variables), existing slots, no cycles. |
-| `plan` | The template is offered on each plan it lists and fits that plan's entitlements: limits on services, vCPU, memory, replicas, database storage and custom domains, plus autoscaling and backup retention. |
+| `limits` | Only when a tenant is chosen: the template fits that tenant's [limits](/docs/get-started/core-concepts/#tenant-limits-and-features) (services, vCPU, memory, replicas, database storage, custom domains, backup retention) and its feature flags allow autoscaling and custom domains. |
 | `capability` | The providers each slot allows can implement every resource. Includes suggestions. |
 | `policy` | Governance policies that can be checked without an instance. |
 

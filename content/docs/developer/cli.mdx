@@ -154,7 +154,7 @@ Production destroys wait for approval in the console; the CLI prints the link.
 | `ork whoami` | Shows the user, key name, scopes and tenants. |
 | `ork init [--name] [--tenant] [--environment] [--yes] [--force] [PATH]` | Scans the project and creates `.ork/`. It asks questions unless you pass `--yes` or stdin is not a TTY. |
 | `ork scan [PATH] [--format table\|json] [--write]` | Walks and scans in parallel. `PATH` can be a directory or one file. `--write` refreshes `.ork/inventory.json` and `.ork/template.yaml`. |
-| `ork template validate [-f FILE] [--plan CODE]` | Calls `POST /templates/validate` and exits with 1 when the template is invalid. |
+| `ork template validate [-f FILE] [--tenant SLUG]` | Calls `POST /templates/validate` and exits with 1 when the template is invalid. With `--tenant`, also checks that tenant's limits and feature flags. |
 | `ork template push [-f FILE]` | Creates the template, or adds a `DRAFT` version. When the local version is not newer than the server's, it bumps the patch number and updates the file. |
 | `ork template diff [-f FILE] [--exit-code]` | Prints a unified diff between the local template and the latest server version. |
 | `ork import [PATH] [--tenant]` | Scans locally and sends `POST /imports { report }`, then prints the import id and the console URL. Your code never leaves your machine. |
@@ -270,7 +270,7 @@ Keys are never written to the project.
    package hints.
 4. **Infer**. The scan adds a network when services or data stores need one, and an ingress plus DNS
    for a public HTTP service on a cloud provider. It then chooses placement slots and tags the
-   template with the size of the smallest default plan it fits (`starter`, `growth` or `scale`)
+   template with its size (`starter`, `growth` or `scale`)
    and with what it found (`containers`, `postgres`, `object storage`).
 5. **Render and validate** the template. Problems become warnings, so the scan never fails on bad
    input.

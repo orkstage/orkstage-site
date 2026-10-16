@@ -27,7 +27,7 @@ Every policy reports a result, so you see everything that was checked, not only 
 | `allowed-regions` | The target and the platform both allow each region. |
 | `max-replicas` | Replica counts stay under the platform limit, when one is configured. |
 | `max-monthly-cost` | The estimate stays under the monthly budget, when one is configured. |
-| `multi-cloud-entitlement` | The tenant's plan allows several clouds, or several regions of one provider, when the placements use them. |
+| `multi-cloud-allowed` | The `MULTI_CLOUD` and `MULTI_REGION` feature flags allow several clouds, or several regions of one provider, when the placements use them. |
 | `cross-cloud-connectivity` | Links between clouds can be satisfied. Warns about latency and egress. |
 
 A `fail` result blocks the deployment. Custom templates go through the same policies.

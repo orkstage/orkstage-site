@@ -1,14 +1,14 @@
 ---
 title: Core concepts
-description: The OrkStage vocabulary, from instances, templates and placement slots to cloud targets, plans, deployments, health, incidents and audit.
+description: The OrkStage vocabulary, from instances, templates and placement slots to cloud targets, tenant limits, deployments, health, incidents and audit.
 ---
 
 ## Tenants and organizations
 
 An **organization** runs one OrkStage installation. It serves **tenants**, the customers or teams
 that own instances. Every record that belongs to a tenant carries its tenant id. A user sees a
-tenant only through a membership with one of the [roles](/docs/user-guide/roles/). Each tenant is
-on a **plan**.
+tenant only through a membership with one of the [roles](/docs/user-guide/roles/). A tenant can have
+**limits**.
 
 ## Instance (stage)
 
@@ -145,26 +145,31 @@ prefers, and suggests alternatives when nothing fits.
 | `ingress` | Application Load Balancer | Application Gateway | Not in the catalog |
 | `dns` | Route 53 and ACM | Azure DNS | Not in the catalog |
 
-## Plans and entitlements
+## Tenant limits and features
 
-A tenant's **plan** (`FREE`, `SANDBOX`, `STARTER`, `GROWTH` or `SCALE`) grants **entitlements**.
-Some are limits: instances, services, CPU, memory, storage, replicas, domains and retention. Others
-are switches: custom templates, custom cloud accounts, several regions, several clouds and
-autoscaling.
+Platform owners and admins can give each tenant **limits**. Every limit is optional: a tenant
+without one may use anything the platform offers. Set them in **Tenants > Limits** or with
+`PATCH /api/v1/tenants/{id}` and a `limits` object.
 
-A template lists the plans it supports. The compiler refuses a placement the plan does not allow,
-for example a second provider when `multiCloud` is off.
+| Limit | Checked |
+|---|---|
+| `maxInstances` | When an instance is created: instances that are not destroyed (`QUOTA_EXCEEDED`). |
+| `maxServicesPerInstance` | Container services in one instance. |
+| `maxVcpuPerInstance`, `maxMemoryGiBPerInstance` | Each service's CPU and memory times its replicas, or its autoscaling ceiling. |
+| `maxReplicasPerService` | Replicas, or the autoscaling ceiling, of any one service. |
+| `maxDatabaseGiBPerInstance` | Database storage of one instance. |
+| `maxDomainsPerInstance` | Custom domains of one instance (the platform subdomain does not count). |
+| `maxBackupRetentionDays` | Backup retention of any one database. |
 
-| Plan | Instances | Multicloud | Multiple regions | Custom templates |
-|---|---|---|---|---|
-| FREE | 1 | no | no | no |
-| SANDBOX | 2 | no | no | no |
-| STARTER | 3 | no | no | no |
-| GROWTH | 10 | yes | no | yes |
-| SCALE | 100 | yes | yes | yes |
+What a tenant's templates may use is decided by [feature flags](/docs/providers/#enabling-a-provider),
+on by default and turned off for the platform or for one tenant: `MULTI_CLOUD` (resources on
+more than one provider), `MULTI_REGION` (more than one region of a provider), `AUTOSCALING` and
+`CUSTOM_DOMAINS`.
 
-These values are the defaults that ship with OrkStage. The copy in the database is the one that
-applies.
+The compiler checks limits and features every time an instance is previewed or deployed, so an
+instance that no longer fits fails before anything changes. Templates do not name plans or
+tenants: any template whose resources fit can be used by any tenant
+([ADR 0007](/docs/contributing/architecture-decisions/#0007-profiles-tenant-limits-and-template-tags-instead-of-plans)).
 
 ## Plan (deployment plan)
 

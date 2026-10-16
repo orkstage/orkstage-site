@@ -38,8 +38,8 @@ Provider code lives only in the `cloud-*` packages.
 ```mermaid
 flowchart TB
   template["Template<br/>provider neutral, versioned"] --> variables["Apply variables"]
-  variables --> entitlements["Check the plan's entitlements"]
-  entitlements --> placement["Place each resource<br/>slot to cloud target and region"]
+  variables --> limits["Check the tenant's limits<br/>and feature flags"]
+  limits --> placement["Place each resource<br/>slot to cloud target and region"]
   placement --> capabilities["Resolve capabilities<br/>adapter catalog, regional gaps"]
   capabilities --> names["Names, standard tags,<br/>resolved spec and spec hash"]
   names --> dag["Dependency DAG<br/>explicit and implicit edges"]
