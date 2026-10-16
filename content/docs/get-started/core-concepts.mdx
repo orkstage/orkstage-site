@@ -51,6 +51,23 @@ and a region. Bind all slots to one AWS account and the template runs on a singl
 to Azure and the same template becomes multicloud. See
 [ADR 0001](/docs/contributing/architecture-decisions/#0001-per-resource-placement-through-template-slots).
 
+### One account per environment
+
+Most organizations keep production, staging and development in separate accounts of the same
+provider. Register one target per account, each with its own credentials, and set the environment
+it serves: `production`, `staging`, `development` or `sandbox`. An instance can only deploy into
+targets of its own environment; the `target-environment` policy stops a production instance from
+landing in a development account, and a development instance from touching production. Mark a
+target `any` only when it is meant for every environment, such as the simulation targets.
+
+| Target | Provider | Account | Environment |
+|---|---|---|---|
+| `aws-prod` | AWS | 111111111111 | `production` |
+| `aws-staging` | AWS | 222222222222 | `staging` |
+| `aws-dev` | AWS | 333333333333 | `development` |
+
+Target names are unique within a tenant (and among shared targets), ignoring case.
+
 ## Capabilities
 
 Each provider adapter publishes a **capability catalog**. For each logical resource type, it lists
