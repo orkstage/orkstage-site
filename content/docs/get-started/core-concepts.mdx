@@ -68,6 +68,13 @@ target `any` only when it is meant for every environment, such as the simulation
 
 Target names are unique within a tenant (and among shared targets), ignoring case.
 
+Mark one target per provider and environment as the **default** (in the console, or
+`POST /api/v1/cloud/targets/{id}/default`). When an instance is created with a slot left unbound,
+in the console, the API or `ork instances create` with that slot missing from `[placements]`,
+OrkStage binds the slot to the default target of the instance's environment (the tenant's own before
+a shared one, the exact environment before `any`, then the order of providers the slot accepts). The
+binding is stored with the instance, so changing the default later never moves existing instances.
+
 ## Capabilities
 
 Each provider adapter publishes a **capability catalog**. For each logical resource type, it lists
