@@ -10,8 +10,11 @@ const withMDX = createMDX();
  *   `<route>/index.html`, which static hosts serve without rewrites per page.
  * - `server`: a Next.js server. Used on Vercel (detected) and when `SITE_OUTPUT=server`. Hostinger's
  *   Node.js web apps always build this way: they import this file and replace `output` with
- *   `'standalone'`, so `distDir` must stay `.next` there. The headers and redirects below play the
- *   role of `.htaccess` in this mode.
+ *   `'standalone'`, so `distDir` must stay `.next` there, and they do not need `SITE_OUTPUT`.
+ *
+ * The headers and redirects below are defined in both modes: a Next.js server (Hostinger's Node.js
+ * app, Vercel) applies them, and a static export ignores them with a build warning, because
+ * `public/.htaccess` does the same job there.
  */
 const mode = process.env.SITE_OUTPUT ?? (process.env.VERCEL ? 'server' : 'export');
 
@@ -32,29 +35,25 @@ const config = {
   images: { unoptimized: true },
   // Two root layouts (app/(en) and app/(pt)) need one global 404 page: app/global-not-found.tsx.
   experimental: { globalNotFound: true },
-  ...(mode === 'export'
-    ? {}
-    : {
-        async headers() {
-          return [{ source: '/:path*', headers: securityHeaders }];
-        },
-        async redirects() {
-          return [
-            {
-              source: '/:path*',
-              has: [{ type: 'host', value: 'www.orkstage.io' }],
-              destination: 'https://orkstage.io/:path*',
-              permanent: true,
-            },
-            // The CLI install scripts from orkstage-cli main, which install the newest release (as in .htaccess).
-            ...['install.sh', 'install.ps1'].map((file) => ({
-              source: `/${file}`,
-              destination: `https://raw.githubusercontent.com/orkstage/orkstage-cli/main/scripts/${file}`,
-              permanent: false,
-            })),
-          ];
-        },
-      }),
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.orkstage.io' }],
+        destination: 'https://orkstage.io/:path*',
+        permanent: true,
+      },
+      // The CLI install scripts from orkstage-cli main, which install the newest release (as in .htaccess).
+      ...['install.sh', 'install.ps1'].map((file) => ({
+        source: `/${file}`,
+        destination: `https://raw.githubusercontent.com/orkstage/orkstage-cli/main/scripts/${file}`,
+        permanent: false,
+      })),
+    ];
+  },
 };
 
 export default withMDX(config);
