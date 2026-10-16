@@ -178,7 +178,7 @@ export const ptBR: Messages = {
     community: 'Community',
     communityNote: 'AGPL-3.0, gratuito',
     enterprise: 'Enterprise',
-    enterpriseNote: 'comercial, `ee/`',
+    enterpriseNote: 'comercial, chave de licença',
     rows: {
       controlPlane: {
         area: 'Control plane',
@@ -244,7 +244,7 @@ export const ptBR: Messages = {
     enterprise: 'Enterprise',
     contact: 'Contato',
     legal:
-      'O OrkStage é open source sob a GNU AGPL-3.0. Os diretórios chamados `ee/` ficam sob a OrkStage Enterprise License. OrkStage e o logo do OrkStage são marcas do projeto OrkStage.',
+      'O OrkStage é open source sob a GNU AGPL-3.0. Os recursos Enterprise ficam sob a OrkStage Enterprise License. OrkStage e o logo do OrkStage são marcas do projeto OrkStage.',
   },
   notFound: {
     title: 'Esta página não existe.',

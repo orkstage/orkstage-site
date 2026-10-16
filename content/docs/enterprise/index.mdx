@@ -12,16 +12,17 @@ finer governance, compliance exports, several organizations and support with an 
 
 ## How it works
 
-- **One codebase, one build.** Enterprise code lives in directories named `ee/` and ships in the
-  same images. There is no separate fork.
+- **One codebase, one build.** The Enterprise source lives in a private repository that the
+  official images are built with. There is no separate fork: a build from the public source is the
+  Community edition.
 - **A license key turns it on.** Set `ORKSTAGE_LICENSE_KEY` to the key you receive. The key is a
   signed token (Ed25519) that OrkStage verifies **offline**. OrkStage does not contact a license
   server and does not require usage reports.
 - **Your data stays usable.** Without a key, or with an invalid key, OrkStage runs as Community. When
   a key expires, a banner shows a 14 day grace period, after which Enterprise features switch off.
   OrkStage never deletes or locks your data.
-- **A clear boundary.** Core code never imports from `ee/`. Enterprise features plug into extension
-  points. Without a license that covers them, gated endpoints answer `402 ENTERPRISE_REQUIRED`.
+- **A clear boundary.** Core code never imports Enterprise code; the platform loads the Enterprise
+  module only when the build has it, and Enterprise features plug into extension points. Without a license that covers them, gated endpoints answer `402 ENTERPRISE_REQUIRED`.
 - **Edition at a glance.** `GET /api/v1/license` reports the active edition and features, and the
   console shows an edition badge.
 
@@ -42,6 +43,6 @@ The full comparison is on [Community vs Enterprise](/docs/enterprise/editions/).
 
 <Cards>
   <Card title="Community vs Enterprise" href="/docs/enterprise/editions/" description="What each edition includes, area by area." />
-  <Card title="License" href="/docs/enterprise/license/" description="The AGPL-3.0 core and the commercial license for ee/, in plain words." />
+  <Card title="License" href="/docs/enterprise/license/" description="The AGPL-3.0 core and the commercial Enterprise license, in plain words." />
   <Card title="Contact" href="/docs/enterprise/contact/" description="Talk to us about Enterprise." />
 </Cards>

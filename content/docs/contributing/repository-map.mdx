@@ -11,8 +11,9 @@ organization. The split kept the git history of every part. Shared code is publi
 
 | Repository | Contents | Publishes | License |
 |---|---|---|---|
-| `orkstage` | Control API, worker, shared packages, `ee/`, platform image, docs | `@orkstage/contracts`, `/authorization`, `/templates` and `/domain`; `ghcr.io/orkstage/platform` | AGPL-3.0, plus `ee/` |
-| `orkstage-console` | The web console | `ghcr.io/orkstage/console` | AGPL-3.0, plus `ee/` |
+| `orkstage` | Control API, worker, shared packages, platform image, docs | `@orkstage/contracts`, `/authorization`, `/templates` and `/domain`; `ghcr.io/orkstage/platform` | AGPL-3.0 |
+| `orkstage-ee` (private) | Enterprise source, a git submodule of `orkstage` at `apps/api/src/ee` that clones skip | Built into the official platform image | OrkStage Enterprise License |
+| `orkstage-console` | The web console | `ghcr.io/orkstage/console` | AGPL-3.0 |
 | `orkstage-cli` | `ork` and the scan engine | Signed `ork` binaries, `@orkstage/scan` (WASM), manifests for Homebrew, Scoop and winget | AGPL-3.0 |
 | `orkstage-modules` | OpenTofu modules and the runner image | Git tags `vX.Y.Z`, `ghcr.io/orkstage/tofu-runner:<tag>` | Apache-2.0 |
 | `orkstage-site` | This site | Static site on S3 and CloudFront (orkstage.io) | MIT for code, CC BY 4.0 for content |
@@ -40,7 +41,7 @@ orkstage-dev     ──git submodules──▶ every repository (pinned commits)
   <Folder name="orkstage-dev" defaultOpen>
     <Folder name="orkstage (core: API, worker, shared packages)" defaultOpen>
       <Folder name="apps">
-        <File name="api/ (control API on NestJS and Fastify: auth, tenancy, CASL, templates, instances, integrations, ee/)" />
+        <File name="api/ (control API on NestJS and Fastify: auth, tenancy, CASL, templates, instances, integrations; ee/ is the private Enterprise submodule)" />
         <File name="worker/ (BullMQ worker: deployments, health, drift, notifications, webhooks)" />
       </Folder>
       <Folder name="packages">
