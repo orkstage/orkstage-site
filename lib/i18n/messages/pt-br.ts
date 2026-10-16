@@ -10,14 +10,14 @@ export const ptBR: Messages = {
     title: 'OrkStage: control plane multicloud e open source',
     description:
       'Descreva o ambiente uma vez, coloque cada recurso na nuvem certa, revise plano, políticas e custo e faça o deploy com OpenTofu. Open source.',
-    ogImageAlt: 'OrkStage: comande cada ambiente da sua nuvem. Control plane multicloud e open source.',
+    ogImageAlt: 'OrkStage: orquestre todas as nuvens de um só palco. Control plane multicloud e open source.',
     notFoundTitle: 'Página não encontrada',
     notFoundDescription: 'Este endereço não corresponde a nenhuma página de orkstage.io. A documentação e a página inicial levam a todo o conteúdo do site.',
   },
   og: {
-    headline: 'Comande cada ambiente da sua nuvem.',
+    headline: 'Orquestre todas as nuvens de um só palco.',
     subline: 'Control plane multicloud e open source. Template, plano, deploy e operação.',
-    footer: 'AWS, Azure, OCI. Escala de verdade. Controle preciso.',
+    footer: 'Control plane multicloud e open source.',
   },
   common: {
     skipToContent: 'Pular para o conteúdo',
@@ -47,7 +47,7 @@ export const ptBR: Messages = {
   },
   hero: {
     eyebrow: 'Control plane multicloud e open source',
-    title: 'Comande cada ambiente da sua nuvem.',
+    title: 'Orquestre todas as nuvens de um só palco.',
     lead: 'Descreva o ambiente uma vez: serviços, Postgres, cache, fila, storage, ingress e DNS. Associe cada recurso à conta e à região que fazem sentido para ele. Revise o plano, o resultado das políticas e uma estimativa do custo mensal. Depois o OrkStage aplica tudo com OpenTofu e continua de olho.',
     primary: 'Começar',
     secondary: 'Ver o código no GitHub',
@@ -213,7 +213,7 @@ export const ptBR: Messages = {
       },
       support: {
         area: 'Suporte',
-        community: 'GitHub Discussions',
+        community: 'GitHub Discussions e Slack',
         enterprisePlanned: 'Suporte prioritário com SLA',
       },
     },
@@ -230,13 +230,15 @@ export const ptBR: Messages = {
     cta: 'Ler o quickstart',
   },
   footer: {
-    tagline: 'Comande cada ambiente da sua nuvem. Escala de verdade. Controle preciso.',
+    tagline: 'Orquestre todas as nuvens de um só palco.',
     product: 'Produto',
     documentation: 'Documentação',
     quickstart: 'Quickstart',
     apiReference: 'Referência da API',
     project: 'Projeto',
     license: 'Licença (AGPL-3.0)',
+    discussions: 'Discussions',
+    slack: 'Slack',
     security: 'Segurança',
     company: 'Empresa',
     enterprise: 'Enterprise',

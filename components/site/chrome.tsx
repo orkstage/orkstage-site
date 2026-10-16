@@ -63,7 +63,7 @@ export function SiteFooter({ locale, path = '/' }: { locale: Locale; path?: Bili
   const hl = docsLang(locale);
   const cols: { title: string; items: [string, string][] }[] = [
     { title: f.product, items: [[f.documentation, links.docs], [f.quickstart, links.quickstart], [f.apiReference, links.apiReference]] },
-    { title: f.project, items: [[m.common.github, links.github], [f.license, links.license], [f.security, links.security]] },
+    { title: f.project, items: [[m.common.github, links.github], [f.discussions, links.discussions], [f.slack, links.slack], [f.license, links.license], [f.security, links.security]] },
     { title: f.company, items: [[f.enterprise, links.enterprise], [f.contact, links.contact]] },
   ];
   return (
