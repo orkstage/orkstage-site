@@ -26,8 +26,8 @@ ErrorDocument 404 /404.html
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^(.*[^/])$ https://%{HTTP_HOST}/$1/ [R=301,L]
 
-  # The CLI install scripts are attached to every orkstage-cli release; serve the latest ones.
-  RewriteRule ^install\.(sh|ps1)$ https://github.com/orkstage/orkstage-cli/releases/latest/download/install.$1 [R=302,L]
+  # The CLI install scripts from orkstage-cli main (they install the newest release).
+  RewriteRule ^install\.(sh|ps1)$ https://raw.githubusercontent.com/orkstage/orkstage-cli/main/scripts/install.$1 [R=302,L]
 
   # Hashed build assets never change: cache them for a year.
   RewriteRule ^_next/static/ - [E=ORK_IMMUTABLE:1]
