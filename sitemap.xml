@@ -38,7 +38,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/contributing/release-process/</loc>
-<lastmod>2026-10-09T18:40:16.000Z</lastmod>
+<lastmod>2026-10-16T21:00:11.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -711,6 +711,12 @@
 <url>
 <loc>https://orkstage.io/docs/get-started/quickstart/</loc>
 <lastmod>2026-10-09T21:34:23.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://orkstage.io/docs/get-started/whats-new/</loc>
+<lastmod>2026-10-16T21:00:11.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
