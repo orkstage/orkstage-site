@@ -189,6 +189,7 @@ export function mdxToProse(source) {
     if (/^\s*(import|export)\s/.test(text)) continue;
     if (/^\s*\|?\s*:?-{3,}/.test(text)) continue; // table separator
     const heading = /^\s*#{1,6}\s/.test(text);
+    text = text.replace(/<include>[^<]*<\/include>/g, ' '); // path of an included file
     const attrs = [];
     // Visible-text attributes of JSX components, checked as prose of their own.
     text = text.replace(/\b(title|description|alt|label)=("([^"]*)"|'([^']*)')/g, (_, _n, _q, a, b) => {

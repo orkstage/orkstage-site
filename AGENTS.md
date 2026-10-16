@@ -16,7 +16,7 @@ modes keep working.
 | `content/docs/` | Documentation in MDX, ordered by the `meta.json` files |
 | `components/`, `lib/` | Shared UI, SEO helpers (metadata, JSON-LD, sitemap) |
 | `openapi/orkstage.json` | API document downloaded from a running API; `content/docs/developer/api-reference/` is generated from it |
-| `scripts/` | `check-prose.mjs`, `check-i18n.mjs`, `check-site.mjs` (links and anchors), `refresh-openapi.mjs`, `generate-api-reference.mjs`, `fix-segment-files.mjs` |
+| `scripts/` | `check-prose.mjs`, `check-i18n.mjs`, `check-site.mjs` (links and anchors), `refresh-openapi.mjs`, `refresh-changelog.mjs`, `generate-api-reference.mjs`, `fix-segment-files.mjs` |
 | `public/.htaccess` | HTTPS and apex redirects, directory pages, 404, security headers, caching |
 
 ## Commands
@@ -31,6 +31,7 @@ pnpm typecheck           # also runs check:i18n and check:prose
 pnpm build               # static export to out/
 pnpm check:site          # after build: every link and anchor resolves
 pnpm openapi:refresh     # with the API running on http://localhost:4000
+pnpm changelog:refresh   # latest CHANGELOG.md sections of each repository, for What's new
 ```
 
 ## Writing rules (enforced by `check:prose`)
