@@ -54,6 +54,11 @@ These apply to every page, in both languages:
   `orkstage/packages/cloud-<provider>/README.md`, endpoints from the OpenAPI document.
 - Link with absolute paths and a trailing slash (`/docs/providers/`); `check:site` verifies them.
 - Code samples must work as written (copy them from a real run when possible).
+- Diagrams are Mermaid code blocks (` ```mermaid `), rendered in the browser by
+  `components/mermaid.tsx`; prefer them to ASCII art, and keep their labels in the writing rules.
+- Console screenshots live in `public/screenshots/` and come from `pnpm screenshots` in
+  orkstage-dev (`docs/screenshots.md` there), never from a real account. Reference them as
+  `![Alt text](/screenshots/<name>.png)` with alt text that says what the screen shows.
 
 ## Deploying
 

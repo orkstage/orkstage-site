@@ -8,8 +8,20 @@ steps and answers at once with `202`. The worker then does the work, so you can 
 
 ## Phases
 
-```text
-validate → targets → plan → [approval] → resources (DAG) → prune → rollout → configure → verify → observability → finalize
+```mermaid
+flowchart TB
+  validate["Validate template and policies"] --> targets["Validate cloud targets"]
+  targets --> plan["Generate plan"]
+  plan --> risky{"High risk change<br/>on production?"}
+  risky -->|no| resources
+  risky -->|yes| approval["Wait for approval"]
+  approval -->|approved| resources["Resources, in dependency order"]
+  resources --> prune["Remove resources no longer in the template"]
+  prune --> rollout["Application rollout"]
+  rollout --> configure["Configure secrets and connections"]
+  configure --> verify["Health and connectivity verification"]
+  verify --> observability["Register observability"]
+  observability --> finalize["Finalize: READY or DEGRADED"]
 ```
 
 | Phase | What happens |
@@ -27,6 +39,8 @@ validate → targets → plan → [approval] → resources (DAG) → prune → r
 
 The deployment page shows each step with its status, the Gantt **timeline** and the **event log**.
 It refreshes every 1.5 seconds while the deployment runs.
+
+![A finished deployment: the Gantt timeline of its phases and resources, the event log and the outputs](/screenshots/deployment.png)
 
 ## Approvals
 
@@ -60,7 +74,26 @@ When the plan contains no high risk change, the approval step is marked skipped 
 - Transient failures, such as throttling and timeouts, are retried with exponential backoff.
   Destructive operations are never retried automatically.
 - A failed resource skips only the resources that depend on it, and unrelated branches finish.
-  Partial failure is a normal outcome, shown per resource.
+  Partial failure is a normal outcome, shown per resource. In this example the database fails, so
+  the API that depends on it is skipped, while storage and the cache finish:
+
+```mermaid
+flowchart LR
+  network["network"] --> database["database"]
+  network --> cache["cache"]
+  network --> ingress["ingress"]
+  database --> api["api"]
+  cache --> api
+  ingress --> api
+  storage["storage"]
+  classDef ok fill:#d9f2e3,stroke:#2f9e5b,color:#14532d
+  classDef failed fill:#fde2e1,stroke:#d14343,color:#7f1d1d
+  classDef skipped fill:#eeeeee,stroke:#9a9a9a,color:#555555,stroke-dasharray:4 3
+  class network,cache,ingress,storage ok
+  class database failed
+  class api skipped
+```
+
 - **Retry** runs only the failed and skipped resources again. Resources that already converged are
   left alone.
 - **Cancel** stops the deployment cooperatively. The worker checks for the request while it runs,
@@ -91,8 +124,14 @@ Through the API: `POST /instances/{id}/preview?templateVersionId={version}` retu
 
 **Destroy** removes every cloud resource in reverse dependency order:
 
-```text
-validate → backup → plan → [approval] → resources (reverse DAG) → cleanup → finalize
+```mermaid
+flowchart LR
+  validate["Validate"] --> backup["Backup check"] --> plan["Plan"]
+  plan --> prod{"production?"}
+  prod -->|no| resources
+  prod -->|yes| approval["Wait for approval"]
+  approval -->|approved| resources["Resources, in reverse<br/>dependency order"]
+  resources --> cleanup["Cleanup"] --> finalize["Finalize: DESTROYED"]
 ```
 
 To confirm, you type the instance slug. An instance marked *Destroy protected* refuses to be

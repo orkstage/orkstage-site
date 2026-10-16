@@ -6,6 +6,7 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
 import type { ReactNode } from 'react';
+import { Mermaid } from './mermaid';
 
 /** Inline status label. `Preview` = built and usable, not yet released or still changing. */
 export function Badge({ children, tone = 'preview' }: { children: ReactNode; tone?: 'preview' | 'planned' | 'ee' | 'simulated' }) {
@@ -31,6 +32,7 @@ export function getMDXComponents(components?: MDXComponents) {
     File,
     Files,
     Folder,
+    Mermaid,
     Step,
     Steps,
     Tab,

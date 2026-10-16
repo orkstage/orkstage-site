@@ -11,6 +11,21 @@ app where it costs least. This page follows the built in **Web app on managed pl
 - PostgreSQL on **Supabase**,
 - uploads in an **AWS S3** bucket.
 
+```mermaid
+flowchart LR
+  subgraph vercel["Vercel, gru1"]
+    web["web<br/>Next.js project"]
+  end
+  subgraph supabase["Supabase, sa-east-1"]
+    database[("database<br/>PostgreSQL")]
+  end
+  subgraph aws["AWS, sa-east-1"]
+    files[("files<br/>S3 bucket")]
+  end
+  web -->|"TLS, sslmode=require"| database
+  web -->|"access key for this bucket only"| files
+```
+
 <Callout title="Preview" type="warn">
   The Vercel and Supabase adapters are in <Badge>Preview</Badge>: covered by unit tests, not yet
   verified against live accounts.

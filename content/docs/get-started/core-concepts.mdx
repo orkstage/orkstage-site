@@ -19,12 +19,44 @@ or *Acme Staging*. Each instance has an environment kind (`production`, `staging
 
 The instance status follows a state machine, and every transition is validated:
 
-```text
-DRAFT → VALIDATING → PLANNING → [AWAITING_APPROVAL] → PROVISIONING → DEPLOYING
-      → CONFIGURING → VERIFYING → READY | DEGRADED
-failures: VALIDATION_FAILED · PLAN_FAILED · PROVISION_FAILED · DEPLOY_FAILED · VERIFICATION_FAILED
-destroy:  DESTROYING → DESTROYED | DESTROY_FAILED
+```mermaid
+stateDiagram-v2
+  [*] --> DRAFT
+  DRAFT --> VALIDATING: deploy
+  VALIDATING --> PLANNING
+  PLANNING --> AWAITING_APPROVAL: high risk production change
+  PLANNING --> PROVISIONING
+  AWAITING_APPROVAL --> PROVISIONING: approved
+  PROVISIONING --> DEPLOYING
+  DEPLOYING --> CONFIGURING
+  CONFIGURING --> VERIFYING
+  VERIFYING --> READY
+  VERIFYING --> DEGRADED
+  READY --> DEGRADED: health drops
+  DEGRADED --> READY: health returns
+  READY --> VALIDATING: redeploy or upgrade
+  DEGRADED --> VALIDATING: redeploy
+  state "a failed state" as FAILED
+  VALIDATING --> FAILED
+  PLANNING --> FAILED
+  AWAITING_APPROVAL --> FAILED: rejected
+  PROVISIONING --> FAILED
+  DEPLOYING --> FAILED
+  CONFIGURING --> FAILED
+  VERIFYING --> FAILED
+  FAILED --> VALIDATING: retry
+  READY --> DESTROYING: destroy
+  DEGRADED --> DESTROYING: destroy
+  FAILED --> DESTROYING: destroy
+  DESTROYING --> DESTROYED
+  DESTROYING --> DESTROY_FAILED
+  DESTROY_FAILED --> DESTROYING: destroy again
+  DESTROYED --> [*]
 ```
+
+The failed states are `VALIDATION_FAILED`, `PLAN_FAILED`, `PROVISION_FAILED`, `DEPLOY_FAILED` (also
+from `CONFIGURING`) and `VERIFICATION_FAILED`. A rejected approval ends in `PLAN_FAILED`, and a
+destroy cancelled before anything was deleted returns the instance to `READY`.
 
 Only one operation runs on an instance at a time. A second deploy or destroy gets
 `409 INSTANCE_BUSY`.
@@ -48,7 +80,23 @@ Credentials are stored as references, never as values.
 A template declares **placement slots** such as `primary`, `data` and `storage`, and lists the
 providers each slot accepts. Every resource names a slot, and an instance binds each slot to a target
 and a region. Bind all slots to one AWS account and the template runs on a single cloud. Bind `data`
-to Azure and the same template becomes multicloud. See
+to Azure and the same template becomes multicloud.
+
+```mermaid
+flowchart LR
+  subgraph template["Template"]
+    api["api<br/>container service"] --> primary(["slot primary"])
+    database["database<br/>PostgreSQL"] --> data(["slot data"])
+    files["files<br/>object storage"] --> storage(["slot storage"])
+  end
+  subgraph instance["Instance bindings"]
+    primary --> aws["aws-prod<br/>us-east-1"]
+    storage --> aws
+    data --> azure["azure-prod<br/>eastus"]
+  end
+```
+
+ See
 [ADR 0001](/docs/contributing/architecture-decisions/#0001-per-resource-placement-through-template-slots).
 
 ### One account per environment
@@ -67,6 +115,8 @@ target `any` only when it is meant for every environment, such as the simulation
 | `aws-dev` | AWS | 333333333333 | `development` |
 
 Target names are unique within a tenant (and among shared targets), ignoring case.
+
+![The cloud target list with provider, regions, health, last validation and the default badge](/screenshots/cloud-targets.png)
 
 Mark one target per provider and environment as the **default** (in the console, or
 `POST /api/v1/cloud/targets/{id}/default`). When an instance is created with a slot left unbound,

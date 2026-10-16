@@ -6,6 +6,8 @@ description: Create, clone, validate and publish OrkStage templates in the conso
 Platform staff manage templates: owners and admins publish them, and operators can read them.
 Tenants use published versions when they create instances.
 
+![The template list in the console](/screenshots/templates.png)
+
 ## Versions and lifecycle
 
 ```text
@@ -37,6 +39,8 @@ CI can run the same validation without storing anything: `POST /templates/valida
 
 To open the builder, choose **Templates**, then **New**, then **Builder**, or click **Builder** on
 an existing template. It is a drag and drop canvas:
+
+![The visual builder showing the multicloud reference template, one lane per placement slot](/screenshots/template-builder.png)
 
 - Drag resource types from the palette onto the canvas.
 - Placement slots are lanes. Drop a resource into a lane to place it, and add or remove lanes.

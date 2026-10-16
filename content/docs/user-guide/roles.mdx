@@ -6,6 +6,21 @@ description: The seven predefined OrkStage roles (three for the platform, four p
 OrkStage has seven predefined roles. **Platform roles** apply to the whole installation. **Tenant
 roles** apply per tenant, so one user can be an admin in one tenant and a viewer in another.
 
+```mermaid
+flowchart TB
+  org["Organization: one OrkStage installation"]
+  staff["Platform staff<br/>PlatformOwner, PlatformAdmin, PlatformOperator"]
+  org --- staff
+  org --> acme["Tenant: Acme"]
+  org --> globex["Tenant: Globex"]
+  acme --> acmeItems["Instances, API keys, webhooks,<br/>status page, audit log"]
+  globex --> globexItems["Instances, API keys, webhooks,<br/>status page, audit log"]
+  user(("Ana")) -->|"Admin"| acme
+  user -->|"Viewer"| globex
+  staff -.->|"every tenant"| acme
+  staff -.->|"every tenant"| globex
+```
+
 ## Platform roles
 
 | Role | Can |
@@ -51,10 +66,24 @@ The API is `GET /tenants/{id}/members`, `POST /tenants/{id}/invitations`,
 
 ## How it is enforced
 
+```mermaid
+flowchart LR
+  request["Request"] --> auth{"Session cookie<br/>or API key?"}
+  auth -->|no| unauthorized["401"]
+  auth -->|yes| scope["Query scoped by<br/>the caller's memberships"]
+  scope --> found{"Record in a<br/>tenant you belong to?"}
+  found -->|no| notFound["404"]
+  found -->|yes| casl{"CASL rules allow<br/>the action?"}
+  casl -->|no| forbidden["403"]
+  casl -->|yes| action["Action"] --> audit["Audit log"]
+```
+
 1. The request is authenticated with a session cookie or an [API key](/docs/developer/api-keys/).
 2. Queries for records that belong to a tenant are filtered by the caller's memberships.
 3. Every loaded record is checked against the same rules (CASL) before any action.
 4. The action is written to the audit log.
+
+![The audit log with actor, action, resource and correlation id](/screenshots/audit.png)
 
 A request for another tenant's record gets **404**, not 403, so the response does not reveal that
 the record exists. The console receives the rules from `GET /me` only to hide what you cannot do.
