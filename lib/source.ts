@@ -1,12 +1,18 @@
 import { loader } from 'fumadocs-core/source';
 import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
+import { remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
+import { applyMdxPreset } from 'fumadocs-mdx/config';
 import { defineDocs } from 'fumadocs-mdx/macro';
 import { openapiPlugin } from 'fumadocs-openapi/server';
 import { docsRoute } from './shared';
 
 const docs = defineDocs({
   dir: 'content/docs',
-  docs: { schema: pageSchema },
+  docs: {
+    schema: pageSchema,
+    // ```mermaid code blocks become <Mermaid /> (components/mermaid.tsx); the default plugins stay.
+    mdxOptions: applyMdxPreset({ remarkPlugins: (plugins) => [remarkMdxMermaid, ...plugins] }),
+  },
   meta: { schema: metaSchema },
 });
 

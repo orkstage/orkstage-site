@@ -5,6 +5,17 @@ description: How OrkStage derives instance health, shows it on a private status 
 
 ## From resource health to instance health
 
+```mermaid
+flowchart LR
+  monitor["Health monitor<br/>every 30 seconds"] --> resource["Resource health"]
+  resource --> instance["Instance health"]
+  resource --> component["Status page component"]
+  resource --> rules{"Failed checks in a row<br/>reach an alert rule?"}
+  rules -->|yes| incident["Incident opened<br/>one per resource, after the cooldown"]
+  incident --> notify["Console, email, webhooks"]
+  resource -->|"healthy again"| resolved["Incident resolved"]
+```
+
 The worker's health monitor checks every active resource through its provider adapter at a fixed
 interval: `HEALTH_CHECK_INTERVAL_SECONDS`, 30 by default. Instance health then follows from the
 health of its components:
@@ -21,6 +32,8 @@ Services and databases are critical by default. Caches, queues and storage are n
 change this per resource with the `critical` field.
 
 ## The status page
+
+![The status page of a tenant during a partial outage of its storage component](/screenshots/status-page.png)
 
 Each tenant has a **private status page**, at `/status/<tenantId>` in the console. It groups
 resources into components that customers see: API, Workers, Database, Cache, Messaging, Storage,
@@ -54,6 +67,8 @@ Incidents follow three rules:
 - After an incident resolves, a **cooldown** passes before a new one can open for the same
   resource.
 - They are **resolved automatically** when health returns, with a final update.
+
+![An automated incident with its timeline and the form to post an update](/screenshots/incident.png)
 
 ## Manual incidents and updates
 

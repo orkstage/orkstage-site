@@ -5,24 +5,20 @@ description: The OrkStage components (console, Control API, worker, Postgres, Re
 
 ## Components
 
-```text
-Web console (Next.js)  ──/api rewrite──▶  Control API (NestJS + Fastify)
-                                            auth · tenancy · CASL · templates · instances
-                                            │ writes intent + enqueues (never runs cloud ops)
-                                            ▼
-                                   Postgres (desired + known state)   Redis (BullMQ, slots)
-                                            ▲
-                                            │
-                                     Worker (BullMQ)
-                       deployment workflow · health monitor · drift scan · notifications · webhooks
-                                            │
-                              Provisioning compiler + DAG executor
-                                            │
-                                  Adapter registry (cloud-core)
-                         ┌──────────────┬───────────────┬──────────────────┐
-                       AWS            Mock (sim)      Other providers (Preview)
-                        │
-               OpenTofu runner (throwaway containers, one state per resource)
+```mermaid
+flowchart TB
+  console["Web console (Next.js)"] -->|"/api rewrite"| api["Control API (NestJS + Fastify)<br/>auth, tenancy, CASL, templates, instances"]
+  api -->|"records intent"| pg[("Postgres<br/>desired and known state, audit log")]
+  api -->|"enqueues jobs, never runs cloud operations"| redis[("Redis<br/>BullMQ queues, target slots")]
+  redis --> worker["Worker (BullMQ)<br/>deployments, health monitor, drift scan,<br/>notifications, webhooks, triggers"]
+  worker <--> pg
+  worker --> compiler["Provisioning compiler and DAG executor"]
+  compiler --> registry["Adapter registry (cloud-core)"]
+  registry --> aws["AWS"]
+  registry --> mock["Mock (simulation)"]
+  registry --> others["Other providers (Preview)"]
+  aws --> tofu["OpenTofu runner<br/>throwaway containers, one state per resource"]
+  others --> tofu
 ```
 
 | Component | Role |
@@ -39,18 +35,19 @@ Provider code lives only in the `cloud-*` packages.
 
 ## From template to cloud
 
-```text
-Template (provider-neutral, versioned)
-  + variables  ─▶ applyVariables
-  + plan       ─▶ plan compatibility (entitlements)
-  + bindings   ─▶ placement slot → cloud target + region      (per resource, not per instance)
-               ─▶ capability resolution per resource          (adapter catalog, regional gaps)
-               ─▶ names, standard tags, resolved spec, spec hash
-               ─▶ dependency DAG (explicit + implicit edges)
-               ─▶ connectivity strategy per link              (private / peering / TLS + allowlist)
-               ─▶ cost estimate (static catalog pricing, "approximate")
-               ─▶ policies (public DB, backups, encryption, regions, budget, multi-cloud, …)
-= ResolvedInfrastructure ─▶ diff vs known resources ─▶ DeploymentPlan (grouped by provider)
+```mermaid
+flowchart TB
+  template["Template<br/>provider neutral, versioned"] --> variables["Apply variables"]
+  variables --> entitlements["Check the plan's entitlements"]
+  entitlements --> placement["Place each resource<br/>slot to cloud target and region"]
+  placement --> capabilities["Resolve capabilities<br/>adapter catalog, regional gaps"]
+  capabilities --> names["Names, standard tags,<br/>resolved spec and spec hash"]
+  names --> dag["Dependency DAG<br/>explicit and implicit edges"]
+  dag --> connectivity["Connectivity strategy per link<br/>private, peering, or TLS with an allowlist"]
+  connectivity --> cost["Cost estimate<br/>static catalog prices, approximate"]
+  cost --> policies["Policies<br/>public databases, backups, encryption,<br/>regions, budget, environments"]
+  policies --> resolved["ResolvedInfrastructure"]
+  resolved -->|"diff against known resources"| plan["DeploymentPlan<br/>grouped by provider"]
 ```
 
 None of these steps touches a cloud. A deployment stores the `ResolvedInfrastructure` snapshot, so

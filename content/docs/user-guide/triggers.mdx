@@ -15,6 +15,17 @@ A trigger starts work at the provider and records the result: the provider deplo
 it started, a link when there is one, and a message. It does not wait for a build to finish; the
 instance health and the provider deployment history show how that ends.
 
+```mermaid
+flowchart LR
+  console["Console<br/>Run"] --> api["Control API<br/>run recorded as QUEUED"]
+  ci["CI with an API key<br/>on.webhook"] --> api
+  schedule["Schedule<br/>on.schedule, UTC cron"] --> worker
+  api --> worker["Worker"]
+  worker --> adapter["Adapter of the provider<br/>that owns the resource"]
+  adapter --> provider["Provider action<br/>redeploy, restart, backup"]
+  worker --> result["Run result, audit,<br/>trigger.succeeded or trigger.failed"]
+```
+
 ## Run from the console
 
 Open the instance and choose **Triggers**. Each trigger shows the resource and action, how it can
