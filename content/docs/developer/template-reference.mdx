@@ -14,9 +14,8 @@ metadata:
   name: hello
   version: 1.0.0
   displayName: Hello
-  profile: starter
+  tags: [starter]
 spec:
-  plans: [STARTER, GROWTH]
   placements:
     - name: primary
       providers: [aws]
@@ -42,13 +41,14 @@ lowercase letter, continue with letters, digits and dashes, and have at most 40 
 | `displayName` | string | required | Shown in the console. |
 | `description` | string | `""` | |
 | `nonProduction` | boolean | `false` | Shows a warning. The `non-production-template` policy fails it for production instances. |
-| `profile` | enum | required | `shared-sandbox`, `dedicated-sandbox`, `starter`, `growth`, `scale`. |
+| `tags` | string[] | `[]` | Free form labels for search and the marketplace, at most 20: lowercase letters, digits and spaces, up to 32 characters each (`starter`, `postgres`, `object storage`). |
+| `profile` | string | none | Deprecated: accepted and ignored with the warning `PROFILE_DEPRECATED`; rejected from the next release. Move the value to `tags`. |
 
 ## spec
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
-| `plans` | enum[] | required, at least 1 | `FREE`, `SANDBOX`, `STARTER`, `GROWTH`, `SCALE`. |
+| `plans` | string[] | none | Deprecated: accepted and ignored with the warning `PLANS_DEPRECATED`; rejected from the next release. A tenant's limits decide what fits, not a list in the template. |
 | `placements` | slot[] | required, at least 1 | See [placements](#placements). |
 | `variables` | variable[] | `[]` | See [variables](#variables). |
 | `resources` | resource[] | required, at least 1 | See [resources](#resources). |
@@ -329,9 +329,8 @@ metadata:
   description: >
     API on AWS ECS Fargate behind an ALB with ECR and Route 53, Postgres on Azure Flexible Server,
     object storage on OCI. Bind every slot to the same AWS target for the AWS-only variant.
-  profile: growth
+  tags: [growth, multicloud]
 spec:
-  plans: [GROWTH, SCALE]
   placements:
     - name: primary
       description: Application runtime, registry, ingress and DNS.

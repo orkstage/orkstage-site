@@ -16,7 +16,7 @@ instance needs a platform owner or admin role, or the customer owner or admin ro
 
 ### Tenant
 
-Choose the customer that owns the instance. The tenant's plan decides which templates and
+Choose the customer that owns the instance. The tenant's plan sets its limits and which
 placements are allowed, and the instance's cost is attributed to that tenant.
 
 </Step>
@@ -28,14 +28,17 @@ Pick a template and one of its **published** versions. Published versions never 
 cannot be used. Templates marked `nonProduction` show a warning. The `non-production-template`
 policy fails if you use one for a `production` instance.
 
-| Predefined template | Profile | Plans |
+| Predefined template | Tags | Notes |
 |---|---|---|
-| `free-validation` | `shared-sandbox`, nonproduction | FREE, SANDBOX |
-| `sandbox-min-cost` | `dedicated-sandbox`, nonproduction | SANDBOX, STARTER |
-| `starter-standard` | `starter` | STARTER, GROWTH |
-| `growth-standard` | `growth` | GROWTH, SCALE |
-| `scale-custom` | `scale` | SCALE |
-| `multicloud-reference` | `growth` | GROWTH, SCALE |
+| `free-validation` | `sandbox`, `low cost` | Not for production |
+| `sandbox-min-cost` | `sandbox` | Not for production |
+| `starter-standard` | `starter` | |
+| `growth-standard` | `growth` | |
+| `scale-custom` | `scale` | |
+| `multicloud-reference` | `growth`, `multicloud` | |
+| `web-platforms` | `growth`, `web`, `multicloud` | |
+
+The size tag (`starter`, `growth`, `scale`) names the smallest default plan the template fits.
 
 </Step>
 <Step>
