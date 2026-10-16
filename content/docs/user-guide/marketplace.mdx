@@ -28,7 +28,7 @@ on, an approximate monthly cost and how often it was starred and used.
 ![The template marketplace with search, filters and template cards](/screenshots/marketplace.png)
 
 A listing page shows the description, every resource with its estimated monthly cost, the
-placement slots and the providers each one allows, the plans it fits, its triggers and the full
+placement slots and the providers each one allows, its tags, its triggers and the full
 template source.
 
 <Callout title="About the estimate">
@@ -41,8 +41,8 @@ template source.
 
 - **Use this template** opens the instance wizard with the template and its published version
   already selected; you choose the tenant, bind each placement slot to your cloud targets and set
-  the variables. Templates that need more than one provider require a plan with multiple
-  providers (GROWTH or SCALE).
+  the variables. Templates that need more than one provider need the `MULTI_CLOUD` feature flag,
+  which is on unless an administrator turned it off.
 - **Clone and customize** (template authors) copies the template so you can change it in the
   builder and publish your own version.
 - **Star** keeps a listing in mind and helps others find popular ones.

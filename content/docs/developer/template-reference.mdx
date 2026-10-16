@@ -1,6 +1,6 @@
 ---
 title: Template reference
-description: The platform/v1 EnvironmentTemplate format. Metadata, plans, placement slots, variables, every resource type with defaults and limits, and examples.
+description: The platform/v1 EnvironmentTemplate format. Metadata and tags, placement slots, variables, every resource type with defaults and limits, and examples.
 ---
 
 A template describes **intent**, never provider resource blocks. The schema on this page comes from
@@ -397,5 +397,5 @@ spec:
 ```bash
 curl -X POST "$ORK_API_URL/api/v1/templates/validate" \
   -H "Authorization: Bearer $ORK_TOKEN" -H "Content-Type: application/json" \
-  --data "$(jq -Rs '{source: ., planCode: "GROWTH"}' < template.yaml)"
+  --data "$(jq -Rs '{source: .}' < template.yaml)"
 ```

@@ -75,6 +75,18 @@ AWS and MiniStack.
 
 [Read ADR 0006](https://github.com/orkstage/orkstage/blob/main/docs/adr/0006-toolchain.md)
 
+## 0007 Profiles, tenant limits and template tags instead of plans
+
+**Accepted.**
+
+Plans and their entitlements are gone. Each tenant has optional limits that platform owners and
+admins set, and feature flags decide whether its templates may use several clouds, several
+regions, autoscaling and custom domains. Templates carry free form tags instead of a list of plans
+and a size profile (`spec.plans` and `metadata.profile` are ignored with a warning for one
+release). Named profiles of accounts and regions per environment replace the default cloud
+targets (in progress).
+[Read ADR 0007](https://github.com/orkstage/orkstage/blob/main/docs/adr/0007-profiles-limits-tags.md)
+
 ## Writing a new ADR
 
 Copy the structure of an existing record: **Status**, **Context**, **Decision** and
