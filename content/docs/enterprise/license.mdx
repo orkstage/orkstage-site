@@ -1,6 +1,6 @@
 ---
 title: License
-description: "How OrkStage is licensed: the AGPL-3.0 core, the Enterprise License for ee/ directories, other repositories, contributions and trademarks."
+description: "How OrkStage is licensed: the AGPL-3.0 core, the Enterprise License for the private Enterprise source, other repositories, contributions and trademarks."
 ---
 
 <Callout type="warn" title="Not legal advice">
@@ -10,7 +10,7 @@ description: "How OrkStage is licensed: the AGPL-3.0 core, the Enterprise Licens
 
 ## The core: GNU AGPL-3.0
 
-Everything outside `ee/` directories is licensed under the
+The platform, the console and the CLI are licensed under the
 [GNU Affero General Public License v3.0](https://github.com/orkstage/orkstage/blob/main/LICENSE).
 
 In practice:
@@ -26,8 +26,10 @@ In practice:
 
 ## Enterprise features: OrkStage Enterprise License
 
-Files in directories named `ee/` are published with their source, but under the OrkStage Enterprise
-License (draft), not the AGPL:
+The Enterprise features are developed in a private repository, `orkstage-ee`, under the
+[OrkStage Enterprise License 1.0](https://github.com/orkstage/orkstage/blob/main/LICENSE-ENTERPRISE), not the AGPL. The official OrkStage images include them;
+customers and evaluators get read access to the source on request
+([hello@orkstage.io](mailto:hello@orkstage.io)). Under that license:
 
 - You may use and modify them for development and testing, and evaluate them for up to 30 days,
   without a subscription.
@@ -38,13 +40,15 @@ License (draft), not the AGPL:
 - You may not resell or sublicense the Enterprise features, or offer them to third parties as a
   hosted service.
 
-Without a key, you run the full Community edition. The Enterprise code is present but inactive.
+Without a key, you run the full Community edition: in the official images the Enterprise code is
+present but inactive, and a build from the public source does not contain it at all.
 
 ## Other repositories
 
 | Repository | License |
 |---|---|
-| `orkstage` (platform), `orkstage-console`, `orkstage-cli` | AGPL-3.0, with `ee/` under the Enterprise License where present |
+| `orkstage` (platform), `orkstage-console`, `orkstage-cli` | AGPL-3.0 |
+| `orkstage-ee` (Enterprise source, private) | OrkStage Enterprise License 1.0 |
 | `orkstage-modules` (OpenTofu modules) | Apache-2.0 is the recommended license, so you can reuse the modules in your own infrastructure |
 | `orkstage-site` (this website) | MIT for the code, CC BY 4.0 for the content |
 

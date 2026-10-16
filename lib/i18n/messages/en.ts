@@ -179,7 +179,7 @@ export const en = {
     community: 'Community',
     communityNote: 'AGPL-3.0, free',
     enterprise: 'Enterprise',
-    enterpriseNote: 'commercial, `ee/`',
+    enterpriseNote: 'commercial, license key',
     rows: {
       controlPlane: {
         area: 'Control plane',
@@ -245,7 +245,7 @@ export const en = {
     enterprise: 'Enterprise',
     contact: 'Contact',
     legal:
-      'OrkStage is open source under the GNU AGPL-3.0. Directories named `ee/` are under the OrkStage Enterprise License. OrkStage and the OrkStage logo are trademarks of the OrkStage project.',
+      'OrkStage is open source under the GNU AGPL-3.0. Enterprise features are under the OrkStage Enterprise License. OrkStage and the OrkStage logo are trademarks of the OrkStage project.',
   },
   notFound: {
     title: 'This stage does not exist.',
