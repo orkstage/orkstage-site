@@ -47,10 +47,31 @@ For each connectivity requirement in the template, the compiler chooses a strate
 OrkStage never creates VPNs or interconnects without telling you. Links between clouds add latency
 and may incur egress charges, and the preview says so.
 
-<Callout type="warn" title="Today">
-  The strategy is chosen and shown, but allowlist rules across clouds are not provisioned yet. One
-  example is an Azure Postgres firewall rule for AWS NAT addresses.
-</Callout>
+### What OrkStage wires for a link between clouds
+
+The plan shows, for each link between clouds, what OrkStage does besides choosing the strategy:
+
+```text
+Cross-cloud
+  CONFIGURE api → database (public-tls-allowlist); credentials copied to api's secret store; firewall allows network egress only
+```
+
+- **Credentials.** When the consumer runs on AWS, Azure or Google Cloud and the database lives on
+  another provider, OrkStage reads the database credentials from the provider that owns them and
+  copies them into the consumer's own secret store at deploy time: one Secrets Manager secret on
+  AWS, Container Apps secrets on Azure, Secret Manager on Google Cloud. The service receives them as
+  `<ID>_USERNAME`, `<ID>_PASSWORD` and so on. The values pass to OpenTofu as a sensitive variable
+  and never appear in the stored configuration. On other providers the service receives only the
+  reference, `<ID>_CREDENTIALS_REF`, and reads it at start.
+- **Allowlist.** For `public-tls-allowlist`, the database waits for the consumer's network and its
+  firewall allows only that network's egress addresses: Azure PostgreSQL firewall rules (replacing
+  the rule that admits every Azure service) or Cloud SQL authorized networks. The network needs a
+  NAT gateway (`natGateway: true`) for a fixed egress address; the plan says so when it has none.
+  PostgreSQL on AWS and OCI has no public endpoint, so a consumer on another cloud cannot reach it
+  without a VPN or interconnect, and the plan says that too.
+- **Verification.** After the deployment, each link is reported with its wiring and whether both
+  ends are healthy. The worker sits in neither network, so it does not probe the path between them;
+  check it from the application (a connection test at start) when it matters.
 
 ## Cost estimate
 

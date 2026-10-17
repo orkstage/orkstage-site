@@ -138,8 +138,9 @@ Logs come from the `ContainerAppConsoleLogs_CL` table of the Log Analytics works
   availability on.
 - Blob Storage has shared keys turned off. Clients use Microsoft Entra identities, so the storage
   account hands no keys to resources on other providers.
-- Credentials published outside Azure Key Vault (another provider's `secret_ref`) reach a
-  container app only as `<ID>_CREDENTIALS_REF`.
+- Credentials published outside Azure Key Vault (another provider's `secret_ref`) are copied into
+  Container Apps secrets at deploy time and reach the app as `<ID>_USERNAME`, `<ID>_PASSWORD` and so
+  on (see [plan and cost](/docs/user-guide/plan-and-cost/)).
 - Front Door routes are created before the apps behind them. A route answers once its service has
   been deployed and joined its origin group. Only public apps can be origins.
 - Zone redundancy of the Container Apps environment (`availabilityZones` above 1) needs a region
