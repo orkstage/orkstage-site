@@ -111,7 +111,7 @@ Every resource has these common fields, plus the fields of its `type`.
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
-| `id` | id | required | Unique in the template. Physical names use it: `co-<tenant>-<instance>-<id>`. |
+| `id` | id | required | Unique in the template. Physical names use it: `ork-<tenant>-<instance>-<id>`. |
 | `type` | enum | required | One of the nine types below. |
 | `placement` | id | `primary` | The slot this resource belongs to. |
 | `implementation` | string | resolver's default | Preferred capability, for example `ecs-fargate`, `ecs-ec2` or `rds-postgres`. |
