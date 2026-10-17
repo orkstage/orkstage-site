@@ -23,8 +23,12 @@ finer governance, compliance exports, several organizations and support with an 
   OrkStage never deletes or locks your data.
 - **A clear boundary.** Core code never imports Enterprise code; the platform loads the Enterprise
   module only when the build has it, and Enterprise features plug into extension points. Without a license that covers them, gated endpoints answer `402 ENTERPRISE_REQUIRED`.
-- **Edition at a glance.** `GET /api/v1/license` reports the active edition and features, and the
-  console shows an edition badge.
+- **Edition at a glance.** `GET /api/v1/license` reports the active edition and features. In the
+  console, **Settings > License** shows the edition, the customer, the expiry and every Enterprise
+  feature with whether the license includes it, and platform staff see a banner during the grace
+  period or when the configured key is not valid.
+- **Locked, not broken.** An Enterprise control the license does not cover, such as the audit log
+  export, shows a short explanation with a link to the editions instead of failing.
 
 ## Feature status
 
