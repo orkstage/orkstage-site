@@ -93,8 +93,11 @@ recorded in the audit log. `GET /cloud/providers` reports whether each provider 
 
 ## Registering a cloud target
 
-Platform owners and admins register targets in the console under **Cloud targets**, or with
-`POST /api/v1/cloud/targets`. The console form asks for the same fields each provider page lists.
+Platform owners and admins connect accounts in the console with **Cloud targets > Connect a cloud**: a
+wizard that turns the provider on if needed, gives the commands that prepare the account, registers the
+target and validates it. `ork targets add` does the same from a terminal, and **Register target** is
+the short form. The API call underneath is `POST /api/v1/cloud/targets`, with the fields each provider
+page lists.
 
 ```http
 POST /api/v1/cloud/targets
