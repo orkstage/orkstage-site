@@ -34,12 +34,58 @@ follow one operation end to end.
 
 ## Metrics and tracing
 
-| Item | Status |
-|---|---|
-| OpenTelemetry SDK in the API and the worker (traces, metrics) | Planned |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Accepted by the configuration, not used yet |
-| OpenTelemetry collector for local testing | Available. The `observability` Compose profile prints the telemetry it receives. |
-| Dashboards and SLO alerts for the control plane | Planned |
+The API and the worker export OpenTelemetry traces and metrics over OTLP when
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set (for example `http://otel-collector:4318`). Without it, nothing
+is loaded and nothing is exported. `OTEL_EXPORTER_OTLP_HEADERS` and the other standard `OTEL_*`
+variables work as usual, so a hosted backend (Grafana Cloud, Honeycomb, Datadog) can receive the
+data directly.
 
-Until these exist, alert on `readyz`, on container restarts, on `deployment.failed` webhooks and on
-error rates in the logs.
+### Traces
+
+- Incoming HTTP requests (the health probes are left out), outgoing `fetch` calls (provider APIs,
+  webhooks), Redis and Prisma queries.
+- Queue jobs continue the trace of the request that queued them: a deployment shows as one trace
+  from `POST /instances/:id/deploy` through the worker's `job deployments` span.
+- Spans carry `tenant.id`, `instance.id`, `deployment.id` and `deployment.kind` where they apply.
+
+### Metrics
+
+| Metric | Unit | Attributes |
+|---|---|---|
+| `http.server.request.duration` (request count and duration) | s | method, status code |
+| `orkstage.queue.depth` | jobs | queue, state |
+| `orkstage.job.duration` | s | queue, outcome |
+| `orkstage.job.retries` | count | queue |
+| `orkstage.deployment.duration` (success and failure rates from its outcome) | s | kind, outcome |
+| `orkstage.provider.request.duration` | s | provider, operation, outcome |
+| `orkstage.provider.errors` | count | provider, operation, failure.class |
+| `orkstage.health_check.count` (failure rate: share not `HEALTHY`) | count | provider, state |
+| `orkstage.incident.opened` | count | source |
+| `orkstage.incident.time_to_resolve` (MTTR) | s | |
+| `orkstage.notification.failures` | count | channel |
+
+### Try it locally
+
+```bash
+pnpm platform:observe    # the stack plus an OpenTelemetry Collector and Jaeger
+```
+
+Deploy an instance, then open Jaeger at http://localhost:16686 (service `orkstage-api`) for the trace,
+and http://localhost:8889/metrics for the metrics in Prometheus format. The collector configuration
+is `otel-collector.yaml` in the development workspace.
+
+## Service level objectives
+
+Targets for running OrkStage, not guarantees to customers. Each one names the metric that measures it.
+
+| Objective | Target | Measured with |
+|---|---|---|
+| API availability | 99.9% of requests without a 5xx | `http.server.request.duration` by status |
+| Control plane read latency | p95 under 300 ms for `GET` | `http.server.request.duration` |
+| Deployment orchestration | over 99% succeed, not counting provider side failures | `orkstage.deployment.duration` by outcome, with `orkstage.provider.errors` |
+| Notification delivery | over 99% delivered | `orkstage.notification.failures` against notifications sent |
+| Status page availability | at least the API's | `http.server.request.duration` for `/status` |
+
+Alert on a burn rate (for example 2% of the monthly error budget in one hour), not on single
+failures. Until dashboards exist, also alert on `readyz`, container restarts and `deployment.failed`
+webhooks.
