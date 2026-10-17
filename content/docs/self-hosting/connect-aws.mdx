@@ -51,7 +51,7 @@ In short, the role may:
 
 - manage EC2 and VPC, ECS, RDS, ElastiCache, ELB, Auto Scaling, Route 53 and ACM resources;
 - manage ECR repositories, SQS queues, Secrets Manager secrets, S3 buckets and IAM service roles
-  whose names start with `co-` (every physical name OrkStage creates does), plus log groups under
+  whose names start with `ork-` (every physical name OrkStage creates does), plus log groups under
   `/orkstage/`;
 - read and write the OpenTofu state bucket `orkstage-tfstate-<account>-*`;
 - pass `ork-*` roles to ECS tasks and EC2 only;
@@ -187,4 +187,4 @@ missing actions.
 | `dns` | Route 53 record, ACM certificate with DNS validation, HTTPS listener |
 
 Every resource carries the platform's standard tags and a name of the form
-`co-<tenant>-<instance>-<resource>`.
+`ork-<tenant>-<instance>-<resource>`.
