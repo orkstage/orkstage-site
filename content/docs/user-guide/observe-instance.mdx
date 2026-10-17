@@ -49,10 +49,13 @@ group. On simulated targets they are generated.
 The **Metrics** tab charts CPU, memory, requests per minute, p95 latency and errors per minute for
 the last hour (`GET /instances/:id/metrics?resourceId=&metric=cpu&minutes=60`).
 
-<Callout type="warn" title="Today">
-  Metrics for real AWS resources (CloudWatch `GetMetricData`) and traces are on the roadmap. The
-  charts are filled only for simulated targets.
-</Callout>
+On AWS the points come from CloudWatch (`GetMetricData`, one point per minute) for ECS services,
+load balancers, RDS databases and ElastiCache clusters. The deployment role already grants
+`cloudwatch:GetMetricData`. On simulated targets the points are generated. Other providers show no
+metrics yet.
+
+To be told when a metric crosses a threshold, add a metric rule on the
+[Alert rules](/docs/user-guide/status-and-incidents#managing-alert-rules) page.
 
 ## Simulation controls
 
