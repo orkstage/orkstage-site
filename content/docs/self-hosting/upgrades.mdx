@@ -3,8 +3,9 @@ title: Upgrades and migrations
 description: Upgrade OrkStage on your own infrastructure. Rebuild images, apply Prisma migrations, update the OpenTofu runner and move instances to new template versions.
 ---
 
-OrkStage has no tagged releases yet, so an upgrade means moving to a newer commit of the platform.
-The procedure below is the one for the Docker Compose stack.
+An installation from the [published images](/docs/self-hosting/production/#upgrade) upgrades by
+changing `ORKSTAGE_VERSION`, pulling and starting again. The procedure below is for the
+`orkstage-dev` Compose stack, built from source.
 
 ## Platform upgrade
 
