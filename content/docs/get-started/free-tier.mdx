@@ -35,17 +35,14 @@ Use a single account for this test; a setup with one account per environment nee
    `docker compose restart api worker`.
 3. **The cloud's command line tool**, signed in to the new account: the AWS CLI, the Azure CLI or the
    OCI CLI.
-4. **A budget alert** on the account, before any deployment. Each tab says where.
+4. **A budget alert** on the account, before any deployment. Each section says where.
 
-## Connect the account and deploy
-
-<Tabs items={['AWS', 'Azure', 'Oracle Cloud']}>
-<Tab value="AWS">
+## AWS
 
 <Steps>
 <Step>
 
-### Create the account and a budget
+### AWS account and budget
 
 Sign up at [aws.amazon.com/free](https://aws.amazon.com/free/) on the **Free plan**. In **Billing and
 Cost Management > Budgets**, create a monthly cost budget of $10 with an email alert. Setting up a
@@ -54,7 +51,7 @@ budget is also one of the tasks that earn more credits.
 </Step>
 <Step>
 
-### Give OrkStage an identity
+### OrkStage identity in AWS
 
 On the local stack, OrkStage uses one of your AWS CLI profiles. Create an IAM user (or an IAM
 Identity Center user) for it, attach the policy from `infra/aws/orkstage-control-plane-policy.json`,
@@ -68,7 +65,7 @@ aws sts get-caller-identity --profile orkstage   # its ARN is the identity the w
 </Step>
 <Step>
 
-### Connect the account in the wizard
+### Connect AWS in the wizard
 
 In the console, **Cloud targets > Connect a cloud > Amazon Web Services**. Type the account id, the
 identity ARN and the region (`us-east-1` keeps the cost estimates exact). The wizard fills in the
@@ -89,7 +86,7 @@ ork targets add --provider aws --name aws-sandbox --environment development \
 </Step>
 <Step>
 
-### Deploy the portable starter
+### Deploy the portable starter on AWS
 
 When validation passes, click **Deploy the portable starter**. Choose a tenant, bind the slot to the
 new target, set the environment to **development**, review the plan and deploy. The service answers
@@ -98,7 +95,7 @@ on the load balancer address shown on the instance page.
 </Step>
 <Step>
 
-### Clean up
+### Clean up AWS
 
 **Destroy** the instance. Leaving it running costs about $1.20 a day from the credits: the load balancer,
 the Fargate task and its public IPv4 address, which AWS charges whether it is used or not.
@@ -106,13 +103,12 @@ the Fargate task and its public IPv4 address, which AWS charges whether it is us
 </Step>
 </Steps>
 
-</Tab>
-<Tab value="Azure">
+## Azure
 
 <Steps>
 <Step>
 
-### Create the account and a budget
+### Azure account and budget
 
 Sign up at [azure.microsoft.com/free](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account).
 In **Cost Management > Budgets**, create a monthly budget of $10 with an alert. A new subscription can
@@ -121,7 +117,7 @@ take up to 48 hours before budgets are available, and budgets alert without stop
 </Step>
 <Step>
 
-### Turn the provider on
+### Turn on Azure
 
 Azure is off by default. In the wizard's first step, choose **Microsoft Azure** and click **Turn it on
 for the platform** (or **Settings > Feature flags**, `PROVIDER_AZURE`).
@@ -129,7 +125,7 @@ for the platform** (or **Settings > Feature flags**, `PROVIDER_AZURE`).
 </Step>
 <Step>
 
-### Connect the account in the wizard
+### Connect Azure in the wizard
 
 Type the subscription id, a location (for example `eastus`) and a name for the state storage account.
 The wizard fills in the commands for the service principal and the state storage. Run them, keep the
@@ -145,7 +141,7 @@ validate.
 </Step>
 <Step>
 
-### Deploy the portable starter
+### Deploy the portable starter on Azure
 
 As on AWS: choose a tenant, bind the slot to the Azure target, environment **development**, review
 and deploy. The web service runs on Container Apps and answers on its built in ingress.
@@ -153,7 +149,7 @@ and deploy. The web service runs on Container Apps and answers on its built in i
 </Step>
 <Step>
 
-### Clean up
+### Clean up Azure
 
 **Destroy** the instance. The Log Analytics workspace that Container Apps need has a small ingestion
 cost; the state storage account stays until you delete its resource group.
@@ -161,13 +157,12 @@ cost; the state storage account stays until you delete its resource group.
 </Step>
 </Steps>
 
-</Tab>
-<Tab value="Oracle Cloud">
+## Oracle Cloud
 
 <Steps>
 <Step>
 
-### Create the account and a budget
+### OCI account and budget
 
 Sign up at [oracle.com/cloud/free](https://www.oracle.com/cloud/free/) and choose the home region
 carefully: Always Free resources live only there. In **Billing > Budgets**, create a budget with an
@@ -176,7 +171,7 @@ email alert.
 </Step>
 <Step>
 
-### Turn the provider on
+### Turn on OCI
 
 OCI is off by default. In the wizard's first step, choose **Oracle Cloud Infrastructure** and click **Turn it on for
 the platform** (or **Settings > Feature flags**, `PROVIDER_OCI`).
@@ -184,7 +179,7 @@ the platform** (or **Settings > Feature flags**, `PROVIDER_OCI`).
 </Step>
 <Step>
 
-### Connect the account in the wizard
+### Connect OCI in the wizard
 
 Type the region and the compartment OCID. The wizard gives you the commands for the API signing key,
 the policies for the group of its user, the state bucket and its customer secret key, and a one line
@@ -194,7 +189,7 @@ user OCIDs, the fingerprint and the namespace in the details step, then register
 </Step>
 <Step>
 
-### Deploy the portable starter
+### Deploy the portable starter on OCI
 
 As on AWS, with the slot bound to the OCI target and environment **development**. The web service
 runs on Container Instances (1 OCPU minimum) behind the Always Free flexible load balancer.
@@ -202,7 +197,7 @@ runs on Container Instances (1 OCPU minimum) behind the Always Free flexible loa
 </Step>
 <Step>
 
-### Clean up
+### Clean up OCI
 
 **Destroy** the instance. Container Instances use the trial credit; when the trial ends, OCI deletes
 paid resources, and an empty state bucket stays within the Always Free storage.
@@ -210,8 +205,6 @@ paid resources, and an empty state bucket stays within the Always Free storage.
 </Step>
 </Steps>
 
-</Tab>
-</Tabs>
 
 ## When something fails
 
