@@ -178,28 +178,6 @@
         ]
       }
     },
-    "/api/v1/plans": {
-      "get": {
-        "operationId": "TenantsController_plans",
-        "parameters": [
-          {
-            "name": "x-orkstage-csrf",
-            "in": "header",
-            "required": false,
-            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
-            "schema": {}
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "tenants"
-        ]
-      }
-    },
     "/api/v1/tenants": {
       "get": {
         "operationId": "TenantsController_list",
@@ -249,15 +227,52 @@
                     "type": "string",
                     "pattern": "^[a-z][a-z0-9-]{1,40}$"
                   },
-                  "planCode": {
-                    "type": "string",
-                    "enum": [
-                      "FREE",
-                      "SANDBOX",
-                      "STARTER",
-                      "GROWTH",
-                      "SCALE"
-                    ]
+                  "limits": {
+                    "default": {},
+                    "type": "object",
+                    "properties": {
+                      "maxInstances": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxServicesPerInstance": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxVcpuPerInstance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxMemoryGiBPerInstance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxReplicasPerService": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxDatabaseGiBPerInstance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxDomainsPerInstance": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxBackupRetentionDays": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      }
+                    },
+                    "additionalProperties": false
                   },
                   "allowedEmailDomains": {
                     "default": [],
@@ -269,8 +284,7 @@
                 },
                 "required": [
                   "name",
-                  "slug",
-                  "planCode"
+                  "slug"
                 ]
               }
             }
@@ -347,15 +361,51 @@
                     "minLength": 2,
                     "maxLength": 80
                   },
-                  "planCode": {
-                    "type": "string",
-                    "enum": [
-                      "FREE",
-                      "SANDBOX",
-                      "STARTER",
-                      "GROWTH",
-                      "SCALE"
-                    ]
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "maxInstances": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxServicesPerInstance": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxVcpuPerInstance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxMemoryGiBPerInstance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxReplicasPerService": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxDatabaseGiBPerInstance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxDomainsPerInstance": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "maxBackupRetentionDays": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 }
               }
@@ -549,15 +599,10 @@
                     "minLength": 1,
                     "maxLength": 200000
                   },
-                  "planCode": {
+                  "tenantId": {
                     "type": "string",
-                    "enum": [
-                      "FREE",
-                      "SANDBOX",
-                      "STARTER",
-                      "GROWTH",
-                      "SCALE"
-                    ]
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                   }
                 }
               }
@@ -775,8 +820,15 @@
                     "maxLength": 80
                   },
                   "environment": {
-                    "default": "production",
-                    "type": "string"
+                    "default": "any",
+                    "type": "string",
+                    "enum": [
+                      "production",
+                      "staging",
+                      "development",
+                      "sandbox",
+                      "any"
+                    ]
                   },
                   "config": {
                     "type": "object",
@@ -1414,6 +1466,305 @@
         ]
       }
     },
+    "/api/v1/profiles": {
+      "get": {
+        "operationId": "ProfilesController_list",
+        "parameters": [
+          {
+            "name": "tenantId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "post": {
+        "operationId": "ProfilesController_create",
+        "parameters": [
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "tenantId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "environment": {
+                    "type": "string",
+                    "enum": [
+                      "production",
+                      "staging",
+                      "development",
+                      "sandbox",
+                      "any"
+                    ]
+                  },
+                  "isDefault": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "targets": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "targetId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "region": {
+                          "type": "string",
+                          "minLength": 2
+                        }
+                      },
+                      "required": [
+                        "targetId"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "environment",
+                  "targets"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles/{id}": {
+      "get": {
+        "operationId": "ProfilesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "patch": {
+        "operationId": "ProfilesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "environment": {
+                    "type": "string",
+                    "enum": [
+                      "production",
+                      "staging",
+                      "development",
+                      "sandbox",
+                      "any"
+                    ]
+                  },
+                  "targets": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "targetId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "region": {
+                          "type": "string",
+                          "minLength": 2
+                        }
+                      },
+                      "required": [
+                        "targetId"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "delete": {
+        "operationId": "ProfilesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles/{id}/default": {
+      "post": {
+        "operationId": "ProfilesController_setDefault",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-orkstage-csrf",
+            "in": "header",
+            "required": false,
+            "description": "Cookie sessions: send \"1\" on POST/PATCH/PUT/DELETE. Not needed with an API key.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "isDefault": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "isDefault"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
     "/api/v1/tenants/{tenantId}/members": {
       "get": {
         "operationId": "TeamController_team",
@@ -1787,6 +2138,7 @@
                     }
                   },
                   "bindings": {
+                    "default": {},
                     "type": "object",
                     "propertyNames": {
                       "type": "string"
@@ -1809,14 +2161,18 @@
                         "region"
                       ]
                     }
+                  },
+                  "profileId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                   }
                 },
                 "required": [
                   "tenantId",
                   "name",
                   "slug",
-                  "templateVersionId",
-                  "bindings"
+                  "templateVersionId"
                 ]
               }
             }
@@ -3523,15 +3879,10 @@
                     "minLength": 1,
                     "maxLength": 200000
                   },
-                  "planCode": {
+                  "tenantId": {
                     "type": "string",
-                    "enum": [
-                      "FREE",
-                      "SANDBOX",
-                      "STARTER",
-                      "GROWTH",
-                      "SCALE"
-                    ]
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                   }
                 },
                 "required": [
@@ -3971,7 +4322,7 @@
   "tags": [],
   "servers": [
     {
-      "url": "http://localhost:4000"
+      "url": "http://localhost:4300"
     }
   ],
   "components": {
