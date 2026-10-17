@@ -1,0 +1,11 @@
+:HL["/_next/static/media/5a0c43ffa288c21a-s.p.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/media/6c596dfcddeca1e9-s.p.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/_next/static/css/64f306985924d3cd.css","style"]
+:HL["/_next/static/css/b62d2e4477fc10e0.css","style"]
+:HL["/brand/logo-dark.svg","image"]
+:HL["/brand/logo-light.svg","image"]
+4:[["children",{"s":"__PAGE__","h":160}]]
+3:[["children",{"s":{"n":"slug","t":"oc","k":"developer/api-reference/profiles/patch-profiles-id","s":[]},"h":64,"c":"$Q4"}]]
+2:[["children",{"s":"docs","h":32,"c":"$Q3"}]]
+1:[["children",{"s":"(en)","h":112,"c":"$Q2"}]]
+0:{"b":"xbaGI01YSVXc0zqgVX8tk","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
