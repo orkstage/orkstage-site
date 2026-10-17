@@ -1,2 +1,2 @@
-Built from 2e1a2bb6be27643b94e0e1947753221ef7f125df of main by the CI workflow. Do not edit this branch: Hostinger deploys it
-to public_html as is. Source: https://github.com/orkstage/orkstage-site/tree/2e1a2bb6be27643b94e0e1947753221ef7f125df
+Built from 3076b89d9177e4ea9ea958462c3817163b0808ee of main by the CI workflow. Do not edit this branch: Hostinger deploys it
+to public_html as is. Source: https://github.com/orkstage/orkstage-site/tree/3076b89d9177e4ea9ea958462c3817163b0808ee
