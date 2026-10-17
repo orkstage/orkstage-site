@@ -55,15 +55,53 @@ whose desired state changed. It writes a summary for each resource to the deploy
 
 ```text
 INFO  [phase:plan] api: 0 to add, 1 to change, 0 to destroy
-WARN  [phase:plan] ingress: 1 to add, 0 to change, 1 to destroy — replace aws_lb_target_group.route[0]
+WARN  [phase:plan] ingress: 1 to add, 0 to change, 1 to destroy; replace aws_lb_target_group.route[0]
 ```
 
 - A deletion or replacement makes the deployment **high risk**. A routine new revision of an ECS task
   definition (for a new image digest) does not.
 - For a `production` instance, high risk **escalates** the deployment to `AWAITING_APPROVAL`, even
   when the platform's own diff predicted only an update.
+- A resource the provider could not plan also escalates a `production` deployment to approval:
+  nobody approves changes nobody has seen.
 - When no change is destructive, the approval step is marked skipped, with the reason.
 - The deployment stores the provider plans (`plan.providerPlans`) for review.
+
+## What is approved is what is applied
+
+Every OpenTofu command runs `tofu validate` after `init`, so a configuration error stops before any
+plan or change.
+
+The plan phase saves each provider plan to a file named after the deployment, in that resource's
+working directory, next to a hash of the configuration it was made from. The apply phase then runs
+`tofu apply <plan file>` instead of planning again:
+
+- If the configuration changed in between (for example a dependency was replaced earlier in the same
+  deployment), or the state changed (someone deployed or edited the resource), a **production** step
+  fails with a message that says so, and nothing is applied. Deploy again to plan and approve the
+  current changes. Other environments log a warning, plan again and apply.
+- The plan file holds attribute values, so it is used once and deleted, whether the apply worked or
+  not. Retries of a failed step plan again.
+- Resources this deployment creates have no saved plan: the platform plan already lists them as new.
+
+Previews and drift scans plan in working directories of their own, without the state lock, so they
+never touch the directory of a running deployment.
+
+## Releasing a stale state lock
+
+Locking uses a lock file next to the state in the bucket (`use_lockfile`). A worker that is killed in
+the middle of an apply can leave it behind; the next deployment of that resource then fails with
+`Error acquiring the state lock` and prints the lock id. Before releasing it, make sure no
+deployment of that instance is still running. Then, from the worker host:
+
+```bash
+docker run --rm -it -v orkstage-tofu-work:/workspace -w /workspace/<directory>   -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN   ghcr.io/opentofu/opentofu:1.12.7 force-unlock <lock id>
+```
+
+The directory is the resource's working directory under `TOFU_WORK_DIR` (its name is printed in the
+failing step's log), and the credentials are the target's (for AWS, a session of the deployment role).
+Write down who released which lock and why in the instance's incident or change record: the release
+itself happens outside OrkStage, so the audit log does not see it.
 
 ## Drift scans
 
