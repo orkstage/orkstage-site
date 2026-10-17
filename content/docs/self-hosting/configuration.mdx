@@ -75,6 +75,7 @@ does not exist yet.
 | `TOFU_PLUGIN_CACHE_VOLUME` | string | `orkstage-tofu-plugins` | Named volume that runners share as the provider plugin cache. |
 | `TOFU_DOCKER_NETWORK` | string | | Docker network for runner containers, so they can reach an emulator by name. |
 | `TOFU_TIMEOUT_MINUTES` | integer from 1 to 240 | `45` | Hard time limit for one OpenTofu command. |
+| `AWS_ROLE_SESSION_MINUTES` | integer from 15 to 720 | `60` | Length of the AWS sessions OrkStage requests when it assumes a deployment role. Each OpenTofu run gets credentials that outlive `TOFU_TIMEOUT_MINUTES`, so keep this above it; above 60, raise the role's `MaxSessionDuration` too. |
 | `AWS_EMULATOR_ENDPOINT` | URL | | Emulator endpoint as seen from inside containers, for example `http://ministack:4566`. |
 
 ## Email

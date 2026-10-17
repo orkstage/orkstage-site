@@ -4,8 +4,9 @@ description: Create the OrkStage deployment role with an external id, prepare th
 ---
 
 OrkStage never stores AWS keys for your accounts. In each account, the worker assumes a **deployment
-role** with **AssumeRole and an external id**. It receives short lived credentials that last one hour,
-stay in memory and are never persisted or logged.
+role** with **AssumeRole and an external id**. It receives short lived credentials that last one hour
+(`AWS_ROLE_SESSION_MINUTES`), stay in memory and are never persisted or logged. Every OpenTofu run gets
+credentials that outlive its time limit, so a long apply never runs out halfway.
 
 ```text
 control plane identity (worker task role / IAM user)
@@ -18,6 +19,35 @@ orkstage-deploy role in the customer account  ──▶  OpenTofu runner (creden
   The deployment role can create and delete infrastructure. Use a dedicated AWS account for each
   environment.
 </Callout>
+
+## Give OrkStage its own identity
+
+The API and the worker call STS with **their own** AWS identity, found through the default credential
+chain. One identity serves every account you connect. Pick one:
+
+- **EC2 instance profile** (recommended on AWS): attach a role to the instance that runs OrkStage.
+  Containers reach the instance metadata only with a hop limit of 2:
+  `aws ec2 modify-instance-metadata-options --instance-id i-... --http-put-response-hop-limit 2 --http-tokens required`.
+- **IAM user keys** anywhere else: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_REGION` in
+  the environment of the API and the worker (the `.env` of the production Compose file).
+- **An AWS CLI profile** on the development stack: `AWS_PROFILE=<name> pnpm platform:aws-real` in the
+  development workspace mounts your `~/.aws` read only.
+
+The identity needs only `infra/aws/orkstage-control-plane-policy.json` from the platform repository:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    { "Sid": "AssumeDeploymentRoles", "Effect": "Allow", "Action": "sts:AssumeRole", "Resource": "arn:aws:iam::*:role/orkstage-deploy" },
+    { "Sid": "ReadExternalIds", "Effect": "Allow", "Action": "secretsmanager:GetSecretValue", "Resource": "arn:aws:secretsmanager:*:*:secret:orkstage/*" }
+  ]
+}
+```
+
+Narrow `sts:AssumeRole` to the list of role ARNs when you know them, and drop the second statement
+when you use `env://` references only. Its ARN is the `ControlPlanePrincipalArn` of every role stack
+below. Without an identity, Validate says so instead of reaching AWS.
 
 ## Connect an account
 
@@ -34,6 +64,7 @@ repository once in each account you connect.
 | `ControlPlanePrincipalArn` | ARN of the identity the OrkStage worker runs as, for example `arn:aws:iam::111122223333:role/orkstage-worker`. |
 | `ExternalId` | A random shared secret of at least 16 characters (`openssl rand -hex 24`). Marked `NoEcho`. |
 | `RoleName` | Defaults to `orkstage-deploy`. |
+| `MaxSessionDuration` | Defaults to `3600` seconds. Raise it with `AWS_ROLE_SESSION_MINUTES` when OpenTofu runs may take longer than 55 minutes. |
 
 ```bash
 aws cloudformation deploy \
@@ -46,6 +77,10 @@ aws cloudformation deploy \
 ```
 
 The stack outputs **`RoleArn`** and **`AccountId`**. You paste both into the cloud target.
+
+Use a **different external id in each account**. With many accounts in one AWS Organization, the
+same template works as a CloudFormation StackSet, with the external id as a parameter override per
+account.
 
 In short, the role may:
 
@@ -141,7 +176,7 @@ Content-Type: application/json
 | `ecsAmiId` | Optional AMI for `ecs-ec2` capacity. When empty, OrkStage uses the latest ECS optimized AMI published in SSM. |
 
 `config` must not contain secrets. The API rejects keys that look like secrets with
-`422 SECRET_IN_CONFIG`. `credentialRef` must be an `env://` or `aws-sm://` reference, and any other
+`422 SECRET_IN_CONFIG`, and a role from another account than `accountId` with `422 INVALID_CONFIG`. `credentialRef` must be an `env://` or `aws-sm://` reference, and any other
 value is rejected. You can assign a target to one tenant (`tenantId`) or share it across tenants.
 
 </Step>
@@ -164,6 +199,30 @@ permission check is reported as skipped.
 
 </Step>
 </Steps>
+
+## Edit a target or rotate its credentials
+
+Click **Edit** on the target, or call `PATCH /api/v1/cloud/targets/:id`. You can change the name, the
+role ARN, the credential reference, the DNS zone, the regions and the concurrency limit. The account
+id and the state bucket are fixed, because existing resources and their state live there: a
+different account is a new target. A region that still has resources, instances or profiles cannot
+be removed. Any change other than the name or the concurrency limit clears the last validation, so
+run **Validate** again.
+
+To rotate the external id without downtime:
+
+1. Update the role stack with the new `ExternalId`. From then on, only the new value works.
+2. Store the new value under a new secret name, for example `orkstage/aws/prod-external-id-2`.
+3. Edit the target and set the new reference, then **Validate**.
+
+Deployments that start after the edit use the new reference at once; the old secret can go.
+
+## Several accounts
+
+Register one target per account and environment, each with its own role and external id, and create
+one profile per environment that points at them (a tenant profile replaces the shared one for that
+tenant when a customer has its own account). Targets in different accounts deploy at the same time
+without sharing credentials: each OpenTofu container receives only its own target's.
 
 ## During a deployment
 
