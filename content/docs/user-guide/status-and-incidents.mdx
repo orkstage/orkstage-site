@@ -1,6 +1,6 @@
 ---
 title: Status page and incidents
-description: How OrkStage derives instance health, shows it on a private status page per tenant, opens incidents automatically and lets staff post incident updates.
+description: How OrkStage derives instance health, shows it on a status page per tenant, opens incidents from health checks and metrics, and posts incident updates.
 ---
 
 ## From resource health to instance health
@@ -11,9 +11,12 @@ flowchart LR
   resource --> instance["Instance health"]
   resource --> component["Status page component"]
   resource --> rules{"Failed checks in a row<br/>reach an alert rule?"}
+  metrics["Metrics<br/>read once a minute"] --> mrules{"Metric beyond<br/>a rule's threshold?"}
   rules -->|yes| incident["Incident opened<br/>one per resource, after the cooldown"]
+  mrules -->|yes| incident
   incident --> notify["Console, email, webhooks"]
   resource -->|"healthy again"| resolved["Incident resolved"]
+  mrules -->|"back within"| resolved
 ```
 
 The worker's health monitor checks every active resource through its provider adapter at a fixed
@@ -53,7 +56,13 @@ are on the roadmap.
 
 ## Automated incidents
 
-Alert rules are stored as data. OrkStage seeds two of them:
+Alert rules decide when OrkStage opens an incident on its own. There are two kinds:
+
+- **Health rules** count failed health checks in a row.
+- **Metric rules** compare a statistic of a metric (average, maximum or minimum) over a window of
+  minutes with a threshold, for example "average CPU % above 80 over 5 minutes".
+
+OrkStage seeds two health rules:
 
 | Rule | Opens an incident after | Severity | Cooldown |
 |---|---|---|---|
@@ -62,11 +71,87 @@ Alert rules are stored as data. OrkStage seeds two of them:
 
 Incidents follow three rules:
 
-- They are **deduplicated** per resource. A resource has at most one open incident, so a flapping
-  resource never opens many.
+- They are **deduplicated** per rule and resource. A resource has at most one open incident for a
+  rule, so a flapping resource never opens many.
 - After an incident resolves, a **cooldown** passes before a new one can open for the same
-  resource.
-- They are **resolved automatically** when health returns, with a final update.
+  resource and rule.
+- They are **resolved automatically** when health returns or the metric is back within the
+  threshold, with a final update. A rule with **Resolve when it clears** turned off leaves the
+  incident open for a person to close.
+
+### Managing alert rules
+
+![The Alert rules page with the two seeded health rules](/screenshots/alert-rules.png)
+
+**Alert rules**, in the console menu (`/settings/alerts`), lists the rules that apply to you and
+lets you add, edit, turn off and delete them.
+
+- Platform staff manage every rule. A rule without a tenant is a **platform rule** and applies to
+  every tenant.
+- Tenant owners and admins manage their own tenant's rules. Other members read them.
+
+A metric rule has these fields:
+
+| Field | Meaning |
+|---|---|
+| Metric | `cpu`, `memory`, `requests`, `errors_5xx`, `latency_ms` or `connections` |
+| Resources | Only one resource type, such as `compute.container-service`, or any resource with the metric |
+| Statistic | average, maximum or minimum of the points in the window |
+| Operator and threshold | `>`, `>=`, `<` or `<=` a number |
+| Window | Minutes of data, one point per minute |
+| Severity, cooldown | As for health rules |
+| Actions | Open an incident; notify the tenant owners |
+
+The worker reads each metric rule at most once a minute per instance, because provider metric APIs
+are billed per request. When the provider has no data for the window, the rule waits.
+
+Where the metrics come from:
+
+| Provider | Metrics |
+|---|---|
+| AWS | CloudWatch `GetMetricData`: ECS service CPU and memory; load balancer requests, 5xx errors and latency; RDS CPU and connections; ElastiCache CPU and connections |
+| Simulated targets | A generated series between 20 and 60, which you can pin to a value |
+| Other providers | None yet. Metric rules have no effect on them |
+
+The same rules are available through the API at `/alert-rules` (`GET`, `POST`, `PATCH`,
+`DELETE`). Reading needs the `instances:read` scope and changing needs `incidents:write`.
+
+```json title="POST /alert-rules"
+{
+  "tenantId": "<tenant id>",
+  "name": "API CPU above 80%",
+  "condition": {
+    "signal": "metric",
+    "metric": "cpu",
+    "resourceTypes": ["compute.container-service"],
+    "statistic": "avg",
+    "operator": ">",
+    "threshold": 80,
+    "windowMinutes": 5
+  },
+  "severity": "high",
+  "cooldownSeconds": 900
+}
+```
+
+### Trying a metric alert on a simulated target
+
+Pin a metric of a resource to a value, wait for the rule to fire, then let it go back:
+
+```bash
+# CPU of the resource "web" stays at 95 until you clear it
+curl -X POST "$ORK_API_URL/api/v1/instances/$INSTANCE/simulate" \
+  -H "Authorization: Bearer $ORK_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"resourceId":"web","metric":{"name":"cpu","value":95}}'
+
+# back to the generated series
+curl -X POST "$ORK_API_URL/api/v1/instances/$INSTANCE/simulate" \
+  -H "Authorization: Bearer $ORK_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"resourceId":"web","metric":{"name":"cpu","value":null}}'
+```
+
+The incident opens within a minute or two of the pin, depending on the window, and resolves the
+same way after you clear it.
 
 ![An automated incident with its timeline and the form to post an update](/screenshots/incident.png)
 
