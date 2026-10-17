@@ -51,12 +51,44 @@ OIDC_ENTRA_CLIENT_ID=<application id>
 OIDC_ENTRA_CLIENT_SECRET=<client secret>
 ```
 
-The flow uses the authorization code grant with PKCE (S256) and verifies `state` and `nonce`. Accounts
-are linked only through an email address the provider has verified.
+The flow uses the authorization code grant with PKCE (S256) and verifies `state` and `nonce`. The ID
+token's signature is checked against the keys the provider publishes (its JWKS), not only the TLS of
+the exchange. Accounts are linked only through an email address the provider has verified.
 
 Microsoft Entra ID is the reference provider. Google and GitLab work through configuration alone but
-have had less testing. GitHub does not speak OIDC for sign in, so it needs an OAuth adapter, which
-does not exist yet.
+have had less testing.
+
+### GitHub sign in
+
+GitHub has no OpenID Connect for people, so it has an OAuth 2 flow of its own with the same `state`
+and PKCE checks. Create an OAuth app (GitHub, Settings, Developer settings, OAuth Apps) with the
+callback `<WEB_PUBLIC_URL>/api/v1/auth/oidc/github/callback`, then:
+
+```bash
+OAUTH_GITHUB_CLIENT_ID=<client id>
+OAUTH_GITHUB_CLIENT_SECRET=<client secret>
+# GitHub Enterprise Server only:
+OAUTH_GITHUB_URL=https://github.example.com
+```
+
+OrkStage asks for `read:user` and `user:email`, reads the person's id and emails once, and discards
+the access token. Only the **primary, verified** email can link to an account; the GitHub user id
+is the stable link afterwards, so a later email change at GitHub does not move the account.
+
+### Account linking
+
+The same rules apply to every provider:
+
+1. A person who signed in with this provider before gets the same account (by the provider's id,
+   never by email).
+2. Otherwise, a verified email links to the existing account with that email.
+3. Otherwise, pending invitations for that email create the account with their memberships.
+4. Otherwise, when exactly one tenant lists the email's domain in **Allowed email domains**, the
+   person joins it as a viewer.
+5. Otherwise, there is no account: unknown people never get one by default.
+
+Disabled accounts cannot sign in. Each person can see where they are signed in and sign other
+devices out under **Your sessions** in the account menu.
 
 ## Worker and OpenTofu runner
 
