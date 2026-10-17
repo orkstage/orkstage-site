@@ -119,7 +119,7 @@ sees for sign in limits. If the API is exposed directly, set `TRUST_PROXY_HOPS=0
 | Variable | Type | Default | Description |
 |---|---|---|---|
 | `ORKSTAGE_LICENSE_KEY` | string | | Enterprise license key (it starts with `orkstage-license.v1.`). Empty means Community edition. |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | URL | | Reserved for OpenTelemetry export. Accepted but not used yet (see [Observability](/docs/self-hosting/observability/)). |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | URL | | OpenTelemetry export (OTLP over HTTP) of traces and metrics from the API and the worker. Empty: off. See [Observability](/docs/self-hosting/observability/). |
 
 ## Console
 
