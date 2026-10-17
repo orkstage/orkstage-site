@@ -116,14 +116,29 @@ target `any` only when it is meant for every environment, such as the simulation
 
 Target names are unique within a tenant (and among shared targets), ignoring case.
 
-![The cloud target list with provider, regions, health, last validation and the default badge](/screenshots/cloud-targets.png)
+![The cloud target list with provider, regions, health and last validation](/screenshots/cloud-targets.png)
 
-Mark one target per provider and environment as the **default** (in the console, or
-`POST /api/v1/cloud/targets/{id}/default`). When an instance is created with a slot left unbound,
-in the console, the API or `ork instances create` with that slot missing from `[placements]`,
-OrkStage binds the slot to the default target of the instance's environment (the tenant's own before
-a shared one, the exact environment before `any`, then the order of providers the slot accepts). The
-binding is stored with the instance, so changing the default later never moves existing instances.
+### Profiles
+
+A **profile** gives a name to a setup for one environment: the cloud target, and optionally the
+region, to use for each provider. For example, "Production Europe" can name `aws-prod` in
+`eu-west-1` and `azure-prod` in `westeurope`, and "Production Brazil" the same accounts in
+`sa-east-1` and `brazilsouth`. Platform owners and admins create profiles in **Profiles**, shared
+with every tenant or for one tenant, and mark one **default** per environment.
+
+When an instance is created, every slot it leaves unbound is bound from the profile it names, or
+from the default profile of its environment: the tenant's own default before a shared one, the
+exact environment before `any`. Each slot gets the profile's target for the first provider in the
+slot's list that the profile has, with the profile's region or else the target's default region.
+In the console, choose the profile on the placement step; with the API, send `profileId` and leave
+slots out of `bindings`; with the CLI, set `[instance].profile` and leave slots out of
+`[placements]`.
+
+Tenant members do not see cloud targets, so a profile is how they place an instance: they choose
+it, and OrkStage fills in the accounts. The bindings and the profile are stored with the instance,
+so editing or deleting the profile later never moves an existing instance.
+
+![The profiles page with a shared default profile and its target per provider](/screenshots/profiles.png)
 
 ## Capabilities
 

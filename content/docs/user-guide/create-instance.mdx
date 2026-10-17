@@ -50,6 +50,10 @@ use different clouds. With `multicloud-reference`, for example, `primary` can ru
 Azure and `storage` on OCI. The list offers only targets whose provider the slot accepts, and only
 the regions each target allows.
 
+A [profile](/docs/get-started/core-concepts/#profiles) fills every slot at once with the account
+and region it names for each provider; you can still change each slot. Tenant members, who do not
+see cloud targets, place the instance by choosing a profile.
+
 <Callout>
   Simulated targets (the mock provider) carry a simulated label. Use them to rehearse a topology
   before you connect real accounts.
