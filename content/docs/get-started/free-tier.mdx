@@ -1,0 +1,221 @@
+---
+title: Free tier accounts
+description: Prove OrkStage against real AWS, Azure and Oracle Cloud accounts on their free offers, with the Portable starter template, a budget alert and a clean teardown.
+---
+
+This guide deploys a small environment into real accounts that cost little or nothing: the
+**Portable starter** template, which is a network, one public web service and the provider's ingress.
+It has no database, registry or DNS record, so every infrastructure provider can run it and it fits
+the free offers below.
+
+<Callout type="warn" title="Offers change">
+  The terms below were checked on October 17, 2026 against the official pages linked next to each one. Read
+  them again before you sign up, set a budget alert first, and destroy the instance when you are done.
+</Callout>
+
+## What each offer covers
+
+| | AWS | Azure | Oracle Cloud (OCI) |
+|---|---|---|---|
+| New account | $100 in credits, up to $100 more for small tasks, on the Free plan for 6 months ([AWS](https://aws.amazon.com/free/free-tier-faqs/)) | $200 credit for 30 days, 12 months of free amounts on popular services, and services that are always free ([Azure](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account)) | $300 credit for 30 days, plus Always Free resources with no time limit ([OCI](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier.htm)) |
+| Card | Usually not required to sign up | Required (credit card in Brazil) | Required, with a temporary hold |
+| When it ends | The Free plan account closes; upgrade within 90 days or it is deleted ([AWS](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/free-tier-plans.html)) | The subscription is disabled until you upgrade to pay as you go ([Azure](https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/avoid-charges-free-account)) | Paid resources are deleted after a 30 day grace period; Always Free ones stay ([OCI](https://www.oracle.com/cloud/free/faq/)) |
+| Portable starter runs on | ECS Fargate and an Application Load Balancer, paid from the credits (about $1.20 a day) | Container Apps with their built in ingress: the always free monthly grant covers about 8 days of the small web service running nonstop, then about $0.50 a day from the credit | Container Instances, paid from the credit (about $0.70 a day), and the Always Free 10 Mbps load balancer |
+
+On AWS, the Free plan does not allow AWS Organizations: joining one moves the account to the Paid plan.
+Use a single account for this test; a setup with one account per environment needs the Paid plan.
+
+## Before you start
+
+1. **OrkStage running.** The local stack is enough: follow the first steps of
+   [Choose a setup](/docs/get-started/setup-paths/#local-with-ministack) and sign in as
+   `admin@example.local`.
+2. **Secrets in `.env.local`.** Targets reference their secrets as `env://NAME`. On the local stack,
+   put those lines in `.env.local` at the workspace root (Git ignores it), then run
+   `docker compose restart api worker`.
+3. **The cloud's command line tool**, signed in to the new account: the AWS CLI, the Azure CLI or the
+   OCI CLI.
+4. **A budget alert** on the account, before any deployment. Each section says where.
+
+## AWS
+
+<Steps>
+<Step>
+
+### AWS account and budget
+
+Sign up at [aws.amazon.com/free](https://aws.amazon.com/free/) on the **Free plan**. In **Billing and
+Cost Management > Budgets**, create a monthly cost budget of $10 with an email alert. Setting up a
+budget is also one of the tasks that earn more credits.
+
+</Step>
+<Step>
+
+### OrkStage identity in AWS
+
+On the local stack, OrkStage uses one of your AWS CLI profiles. Create an IAM user (or an IAM
+Identity Center user) for it, attach the policy from `infra/aws/orkstage-control-plane-policy.json`,
+configure a profile named `orkstage`, then restart the stack with it:
+
+```bash
+AWS_PROFILE=orkstage pnpm platform:aws-real
+aws sts get-caller-identity --profile orkstage   # its ARN is the identity the wizard asks for
+```
+
+</Step>
+<Step>
+
+### Connect AWS in the wizard
+
+In the console, **Cloud targets > Connect a cloud > Amazon Web Services**. Type the account id, the
+identity ARN and the region (`us-east-1` keeps the cost estimates exact). The wizard fills in the
+commands for the deployment role, the state bucket and the external id. Run them, put the external
+id line in `.env.local`, restart the API and worker, then continue: the wizard registers the target
+and validates it.
+
+From a terminal instead:
+
+```bash
+ork targets external-id      # use it in the role stack and in .env.local
+ork targets add --provider aws --name aws-sandbox --environment development \
+  --config accountId=123456789012 \
+  --config roleArn=arn:aws:iam::123456789012:role/orkstage-deploy \
+  --credential-ref env://ORKSTAGE_AWS_SANDBOX_EXTERNAL_ID --regions us-east-1
+```
+
+</Step>
+<Step>
+
+### Deploy the portable starter on AWS
+
+When validation passes, click **Deploy the portable starter**. Choose a tenant, bind the slot to the
+new target, set the environment to **development**, review the plan and deploy. The service answers
+on the load balancer address shown on the instance page.
+
+</Step>
+<Step>
+
+### Clean up AWS
+
+**Destroy** the instance. Leaving it running costs about $1.20 a day from the credits: the load balancer,
+the Fargate task and its public IPv4 address, which AWS charges whether it is used or not.
+
+</Step>
+</Steps>
+
+## Azure
+
+<Steps>
+<Step>
+
+### Azure account and budget
+
+Sign up at [azure.microsoft.com/free](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account).
+In **Cost Management > Budgets**, create a monthly budget of $10 with an alert. A new subscription can
+take up to 48 hours before budgets are available, and budgets alert without stopping anything.
+
+</Step>
+<Step>
+
+### Turn on Azure
+
+Azure is off by default. In the wizard's first step, choose **Microsoft Azure** and click **Turn it on
+for the platform** (or **Settings > Feature flags**, `PROVIDER_AZURE`).
+
+</Step>
+<Step>
+
+### Connect Azure in the wizard
+
+Type the subscription id, a location (for example `eastus`) and a name for the state storage account.
+The wizard fills in the commands for the service principal and the state storage. Run them, keep the
+`appId`, `password` and `tenant` the first command prints, and put the client secret in `.env.local`:
+
+```bash
+ORKSTAGE_AZURE_SANDBOX={"clientSecret":"<password>"}
+```
+
+Restart the API and worker, type `tenantId` and `clientId` in the details step, then register and
+validate.
+
+</Step>
+<Step>
+
+### Deploy the portable starter on Azure
+
+As on AWS: choose a tenant, bind the slot to the Azure target, environment **development**, review
+and deploy. The web service runs on Container Apps and answers on its built in ingress.
+
+</Step>
+<Step>
+
+### Clean up Azure
+
+**Destroy** the instance. The Log Analytics workspace that Container Apps need has a small ingestion
+cost; the state storage account stays until you delete its resource group.
+
+</Step>
+</Steps>
+
+## Oracle Cloud
+
+<Steps>
+<Step>
+
+### OCI account and budget
+
+Sign up at [oracle.com/cloud/free](https://www.oracle.com/cloud/free/) and choose the home region
+carefully: Always Free resources live only there. In **Billing > Budgets**, create a budget with an
+email alert.
+
+</Step>
+<Step>
+
+### Turn on OCI
+
+OCI is off by default. In the wizard's first step, choose **Oracle Cloud Infrastructure** and click **Turn it on for
+the platform** (or **Settings > Feature flags**, `PROVIDER_OCI`).
+
+</Step>
+<Step>
+
+### Connect OCI in the wizard
+
+Type the region and the compartment OCID. The wizard gives you the commands for the API signing key,
+the policies for the group of its user, the state bucket and its customer secret key, and a one line
+command that writes the credential to `.env.local`. Restart the API and worker, type the tenancy and
+user OCIDs, the fingerprint and the namespace in the details step, then register and validate.
+
+</Step>
+<Step>
+
+### Deploy the portable starter on OCI
+
+As on AWS, with the slot bound to the OCI target and environment **development**. The web service
+runs on Container Instances (1 OCPU minimum) behind the Always Free flexible load balancer.
+
+</Step>
+<Step>
+
+### Clean up OCI
+
+**Destroy** the instance. Container Instances use the trial credit; when the trial ends, OCI deletes
+paid resources, and an empty state bucket stays within the Always Free storage.
+
+</Step>
+</Steps>
+
+
+## When something fails
+
+The validation step names the check that failed and why. The usual causes:
+
+| Message | Fix |
+|---|---|
+| `Secret ORKSTAGE_... is not set` | The line is missing from `.env.local`, or the API and worker were not restarted after adding it |
+| OrkStage has no AWS identity of its own | Start the stack with `AWS_PROFILE=<profile> pnpm platform:aws-real` |
+| Access denied assuming the deployment role | The role stack's `ControlPlanePrincipalArn` or external id does not match |
+| State bucket or container missing | Run the state step of the wizard again for that region |
+| A quota error during the deployment | New accounts have low quotas; pick another region or ask the provider to raise it |
+
+More in [troubleshooting](/docs/self-hosting/troubleshooting/).
