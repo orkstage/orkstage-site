@@ -1,0 +1,108 @@
+---
+title: Production install
+description: Run OrkStage on your own server from the published images, with HTTPS, single sign on, Postgres and Redis, and upgrade it by changing one version number.
+---
+
+The [`deploy`](https://github.com/orkstage/orkstage/tree/main/deploy) folder of the `orkstage`
+repository runs OrkStage from the published images on one host with Docker Compose: the platform
+image (Control API, worker, migrations and console) and the OpenTofu runner image, both from
+`ghcr.io/orkstage`, behind Caddy for HTTPS.
+
+<Callout type="warn" title="First release pending">
+  The images are published when a version is tagged. Until the first release, build them from the
+  [`orkstage-dev`](/docs/self-hosting/docker-compose/) workspace.
+</Callout>
+
+## What you need
+
+- A Linux host with Docker Engine and Compose v2, 2 vCPU and 4 GB of memory at least, used only by
+  OrkStage: the worker starts OpenTofu containers through the Docker socket, which gives it control
+  of the host's Docker.
+- A host name that points to it, with ports 80 and 443 open (Caddy gets the certificate from
+  Let's Encrypt).
+- An OIDC provider for sign in, such as Microsoft Entra ID, Google or Keycloak. Production has no
+  development login.
+- An SMTP server for invitations and notifications.
+
+## Install
+
+<Steps>
+<Step>
+
+### Get the files
+
+```bash
+mkdir orkstage && cd orkstage
+for f in compose.yaml Caddyfile .env.example; do
+  curl -fsSLO "https://raw.githubusercontent.com/orkstage/orkstage/main/deploy/$f"
+done
+cp .env.example .env
+```
+
+</Step>
+<Step>
+
+### Fill in `.env`
+
+| Setting | Value |
+|---|---|
+| `ORKSTAGE_VERSION` | The release to run, for example `0.1.0`. |
+| `ORKSTAGE_DOMAIN` | The host name, for example `orkstage.example.com`. |
+| `POSTGRES_PASSWORD` | Letters and digits, for the bundled Postgres. |
+| `SESSION_SECRET`, `ENCRYPTION_KEY` | `openssl rand -base64 32` for each. Keep a copy of the encryption key with your backups. |
+| `PLATFORM_OWNER_EMAIL` | Your email: your first sign in with it makes you the platform owner. |
+| `OIDC_<NAME>_ISSUER`, `_CLIENT_ID`, `_CLIENT_SECRET` | One set per sign in provider. Register `https://<domain>/api/v1/auth/oidc/<name>/callback` as the redirect URL. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` | Your mail server. |
+| `ORKSTAGE_LICENSE_KEY` | Only with an Enterprise subscription. |
+
+To use managed Postgres and Redis, remove `COMPOSE_PROFILES=bundled` and set `DATABASE_URL` and
+`REDIS_URL`. Every other setting is in [Configuration](/docs/self-hosting/configuration/).
+
+</Step>
+<Step>
+
+### Start
+
+```bash
+docker compose up -d --wait
+```
+
+The `migrate` service applies the database migrations and the production seed (the built in
+templates, the organization and the platform owner, never demo data), then the API, the worker
+and the console start. Open `https://<domain>` and sign in.
+
+</Step>
+<Step>
+
+### Connect a cloud and create a profile
+
+Register a [cloud target](/docs/self-hosting/connect-aws/) for each account, then a
+[profile](/docs/get-started/core-concepts/#profiles) per environment, and mark the defaults.
+
+</Step>
+</Steps>
+
+## Upgrade
+
+```bash
+# after a backup of Postgres (see Backups and recovery)
+sed -i 's/^ORKSTAGE_VERSION=.*/ORKSTAGE_VERSION=0.2.0/' .env
+docker compose pull
+docker compose up -d --wait
+```
+
+`migrate` applies only the pending migrations before the new API and worker start. Migrations move
+forward only, so restoring the backup is the way back. Read the release notes first; see
+[Upgrades and migrations](/docs/self-hosting/upgrades/).
+
+## Verify the images
+
+Every image is signed with cosign (keyless, from the release workflow) and carries an SBOM and
+build provenance:
+
+```bash
+cosign verify ghcr.io/orkstage/platform:0.1.0 \
+  --certificate-identity-regexp '^https://github.com/orkstage/orkstage-dev/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+docker buildx imagetools inspect ghcr.io/orkstage/platform:0.1.0 --format '{{ json .SBOM }}'
+```
