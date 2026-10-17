@@ -836,7 +836,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/configuration/</loc>
-<lastmod>2026-10-12T04:27:44.000Z</lastmod>
+<lastmod>2026-10-17T01:18:04.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -848,7 +848,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/docker-compose/</loc>
-<lastmod>2026-10-10T01:23:45.000Z</lastmod>
+<lastmod>2026-10-17T01:18:04.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -861,6 +861,12 @@
 <url>
 <loc>https://orkstage.io/docs/self-hosting/opentofu/</loc>
 <lastmod>2026-10-09T18:40:16.000Z</lastmod>
+<changefreq>weekly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://orkstage.io/docs/self-hosting/production/</loc>
+<lastmod>2026-10-17T01:18:04.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -884,7 +890,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/upgrades/</loc>
-<lastmod>2026-10-09T21:34:23.000Z</lastmod>
+<lastmod>2026-10-17T01:18:04.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
