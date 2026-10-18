@@ -1,6 +1,6 @@
 ---
 title: CI/CD intake
-description: Connect pipelines to OrkStage. Register applications, publish image versions by digest, validate templates in pull requests, then deploy and wait.
+description: Connect GitHub Actions, Jenkins, GitLab CI/CD or AWS CodePipeline to OrkStage. Publish image versions by digest, validate templates, deploy and wait.
 ---
 
 Three endpoints exist for pipelines. Pipelines also use the regular deploy and deployment
@@ -91,6 +91,15 @@ done
 If you deploy while another operation is running, the API answers `409 INSTANCE_BUSY`. Treat it as
 "try again later", not as a failed build.
 
+The examples below call this loop as `scripts/orkstage-deploy.sh <instance id>`: save it in your
+repository with `INSTANCE_ID="$1"` at the top. Every CI system follows the same three steps:
+
+1. Store the API key as a secret of the CI system and expose it as `ORK_TOKEN`, with `ORK_API_URL`
+   as a plain variable. Never print it or put it in the repository.
+2. After the image is pushed, publish its version by digest (`POST /applications/:name/versions`).
+3. Deploy the instance and wait (`scripts/orkstage-deploy.sh`). Production deployments may stop at
+   `AWAITING_APPROVAL` until someone approves them in the console.
+
 ## GitHub Actions
 
 <Tabs items={['curl', 'ork CLI (Preview)']}>
@@ -143,6 +152,80 @@ you build from source. `ork template push` needs an organization key, as describ
 
 </Tab>
 </Tabs>
+
+## Jenkins
+
+Store the key as a **Secret text** credential with the id `orkstage-token`.
+
+```groovy title="Jenkinsfile"
+pipeline {
+  agent any
+  environment {
+    ORK_API_URL = 'https://orkstage.example.com'
+    ORK_TOKEN   = credentials('orkstage-token')
+  }
+  stages {
+    // ... build and push the image, set IMAGE and DIGEST ...
+    stage('Publish version') {
+      steps {
+        sh '''curl -fsS -X POST "$ORK_API_URL/api/v1/applications/orders-api/versions"           -H "Authorization: Bearer $ORK_TOKEN" -H "Content-Type: application/json"           -d "{\"version\":\"$BUILD_NUMBER\",\"imageUri\":\"$IMAGE\",\"digest\":\"$DIGEST\"}"'''
+      }
+    }
+    stage('Deploy staging') {
+      steps { sh './scripts/orkstage-deploy.sh "$STAGING_INSTANCE_ID"' }
+    }
+  }
+}
+```
+
+## GitLab CI/CD
+
+Add `ORK_TOKEN` under **Settings > CI/CD > Variables**, masked and protected.
+
+```yaml title=".gitlab-ci.yml"
+deploy-staging:
+  stage: deploy
+  image: alpine:3.22
+  variables:
+    ORK_API_URL: https://orkstage.example.com
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    # ... the image was pushed in an earlier job; IMAGE and DIGEST come from its dotenv report ...
+    - >
+      curl -fsS -X POST "$ORK_API_URL/api/v1/applications/orders-api/versions"
+      -H "Authorization: Bearer $ORK_TOKEN" -H "Content-Type: application/json"
+      -d "{\"version\":\"$CI_COMMIT_SHORT_SHA\",\"imageUri\":\"$IMAGE\",\"digest\":\"$DIGEST\"}"
+    - ./scripts/orkstage-deploy.sh "$STAGING_INSTANCE_ID"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+
+## AWS CodePipeline
+
+Add a CodeBuild action after the build stage. Keep the key in Secrets Manager and let CodeBuild
+read it; the CodeBuild role needs `secretsmanager:GetSecretValue` on that secret only.
+
+```yaml title="buildspec-deploy.yml"
+version: 0.2
+env:
+  variables:
+    ORK_API_URL: https://orkstage.example.com
+  secrets-manager:
+    ORK_TOKEN: orkstage/ci-token
+phases:
+  build:
+    commands:
+      # IMAGE and DIGEST come from the build stage (exported variables or an artifact).
+      - >
+        curl -fsS -X POST "$ORK_API_URL/api/v1/applications/orders-api/versions"
+        -H "Authorization: Bearer $ORK_TOKEN" -H "Content-Type: application/json"
+        -d "{\"version\":\"$CODEBUILD_RESOLVED_SOURCE_VERSION\",\"imageUri\":\"$IMAGE\",\"digest\":\"$DIGEST\"}"
+      - ./scripts/orkstage-deploy.sh "$STAGING_INSTANCE_ID"
+```
+
+The same shape works in Azure Pipelines, CircleCI, Bitbucket Pipelines or any runner with `curl`
+and `jq`: a secret for the key, one call to publish, one script to deploy and wait.
 
 ## Notifications instead of polling
 

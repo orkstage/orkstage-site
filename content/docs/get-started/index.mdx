@@ -3,6 +3,13 @@ title: Introduction
 description: OrkStage is an open source multicloud control plane. Define an environment once, place each resource on a cloud, review the plan and deploy with OpenTofu.
 ---
 
+<Callout title="Alpha" type="warn">
+  OrkStage is in alpha. The whole platform is being tested and validated, and features and provider
+  integrations are released gradually. APIs and data formats may still change between versions;
+  keep that in mind before you run anything you depend on. See [roadmap](/docs/get-started/roadmap)
+  for what is planned.
+</Callout>
+
 OrkStage provisions and operates **isolated environments** on one or several clouds. Each
 environment is called an *instance* (or a *stage*). It is a logical unit that groups services, a
 Postgres database, a cache, a queue, object storage, ingress and DNS.

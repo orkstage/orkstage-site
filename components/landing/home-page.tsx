@@ -33,6 +33,10 @@ export function HomePage({ locale }: { locale: Locale }) {
                 {m.hero.title}
               </h1>
               <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-ink-muted">{m.hero.lead}</p>
+              <p role="note" className="mt-5 max-w-[60ch] rounded-md border border-hairline px-3 py-2 text-[13px] leading-relaxed text-ink-muted">
+                <strong className="font-semibold text-ink">{m.hero.alphaLabel}</strong> {m.hero.alpha}{' '}
+                <span className="text-ink-subtle">{m.hero.next}</span>
+              </p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <PrimaryLink href={links.quickstart} hrefLang={docsLang}>
                   {m.hero.primary}
