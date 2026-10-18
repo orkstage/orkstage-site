@@ -7,7 +7,7 @@ A new instance starts as a `DRAFT`, and nothing is provisioned until you
 [deploy](/docs/user-guide/deploy/) it. Open **Instances**, then **New instance**. Creating an
 instance needs a platform owner or admin role, or the customer owner or admin role in the tenant.
 
-## The six wizard steps
+## The seven wizard steps
 
 ![The new instance wizard on its first step, choosing the tenant](/screenshots/instance-new.png)
 
@@ -24,19 +24,20 @@ and feature flags decide what fits, and the instance's cost is attributed to tha
 
 ### Template
 
-Pick a template and one of its **published** versions. Published versions never change, and drafts
-cannot be used. Templates marked `nonProduction` show a warning. The `non-production-template`
+Pick a template and one of its **published** versions. Published versions never change; drafts and
+deprecated versions cannot be used. Templates marked `nonProduction` show a warning. The `non-production-template`
 policy fails if you use one for a `production` instance.
 
 | Predefined template | Tags | Notes |
 |---|---|---|
 | `free-validation` | `sandbox`, `low cost` | Not for production |
 | `sandbox-min-cost` | `sandbox` | Not for production |
-| `starter-standard` | `starter` | |
-| `growth-standard` | `growth` | |
+| `starter-standard` | `starter` | AWS |
+| `growth-standard` | `growth` | AWS |
 | `scale-custom` | `scale` | |
 | `multicloud-reference` | `growth`, `multicloud` | |
 | `web-platforms` | `growth`, `web`, `multicloud` | |
+| `portable-starter` | `sandbox`, `low cost`, `portable` | Every infrastructure provider; not for production |
 
 The size tag (`starter`, `growth`, `scale`) gives an idea of the resources a template needs.
 
@@ -65,8 +66,9 @@ see cloud targets, place the instance by choosing a profile.
 ### Variables
 
 Templates expose a few typed variables, for example `apiReplicas` or `databaseSize`. The form
-starts with the default values. The browser checks ranges and allowed values, and the API checks
-them again.
+starts with the default values. When every variable has a default, they stay under **Advanced
+settings**, closed, because the defaults fit most instances. The browser checks ranges and allowed
+values, and the API checks them again.
 
 </Step>
 <Step>
@@ -81,10 +83,22 @@ step for high risk changes.
 </Step>
 <Step>
 
+### Plan and cost
+
+Before anything exists, OrkStage compiles the instance and shows its plan: the resources it would
+create on each provider, the policy results, the links between clouds and the estimated monthly
+cost. Nothing is saved and no cloud is called (`POST /instances/preview`, with the same body as
+`POST /instances`). Issues that make the configuration impossible stop the wizard here. Policy
+failures do not stop the creation, but they block deployments until they are fixed.
+
+</Step>
+<Step>
+
 ### Review and create
 
-Check the summary and create the draft. The console opens the instance page, where the
-[Plan & cost](/docs/user-guide/plan-and-cost/) tab previews what a deployment would do.
+Check the summary, with the estimated cost, and create the instance. The console opens the
+instance page, where the [Plan & cost](/docs/user-guide/plan-and-cost/) tab previews what a
+deployment would do.
 
 </Step>
 </Steps>

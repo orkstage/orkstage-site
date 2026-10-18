@@ -11,14 +11,30 @@ Tenants use published versions when they create instances.
 ## Versions and lifecycle
 
 ```text
-DRAFT ──validate──▶ DRAFT (with report) ──publish──▶ PUBLISHED (immutable)
+DRAFT ──edit, validate──▶ DRAFT ──publish──▶ PUBLISHED ──deprecate──▶ DEPRECATED
+                                                 ▲                         │
+                                                 └──────── restore ────────┘
 ```
 
 - **New template** creates the first version as a draft.
-- **New version** adds a draft version. Published versions are never edited.
-- **Publish** runs the full validation and refuses unsafe templates.
+- **Edit draft** changes the YAML of a draft. Its name and version stay; to change the version,
+  add a new one.
+- **New version** adds a draft version.
+- **Publish** runs the full validation and refuses unsafe templates. It also refuses a version
+  when no shared cloud target can host every placement slot, because the capability and policy
+  checks could not run (`CAPABILITY_UNCHECKED`). Add a target for the providers the slots allow,
+  or widen the slots, and publish again.
+- Published and deprecated versions never change. The database refuses any change to their source,
+  not only the API, because instances record the version they run.
+- **Deprecate** retires a published version, with an optional note. Instances on it keep running
+  and can still be deployed; new instances and upgrades are refused with `TEMPLATE_DEPRECATED` and
+  the note. **Restore** makes it published again.
+- **Compare with** shows the YAML changes between the selected version and any other one.
 - **Clone** copies a template under a new name, for example to start from a predefined one.
 - An instance keeps its version until someone runs **Upgrade template** on it.
+
+The built in templates follow the same rules: when OrkStage ships a newer built in version, the
+older one becomes deprecated and its instances keep running.
 
 ## Validation
 

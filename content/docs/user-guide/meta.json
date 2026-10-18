@@ -9,6 +9,7 @@
     "deploy",
     "triggers",
     "observe-instance",
+    "custom-domains",
     "status-and-incidents",
     "notifications",
     "templates",

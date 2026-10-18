@@ -29,8 +29,46 @@ Every policy reports a result, so you see everything that was checked, not only 
 | `max-monthly-cost` | The estimate stays under the monthly budget, when one is configured. |
 | `multi-cloud-allowed` | The `MULTI_CLOUD` and `MULTI_REGION` feature flags allow several clouds, or several regions of one provider, when the placements use them. |
 | `cross-cloud-connectivity` | Links between clouds can be satisfied. Warns about latency and egress. |
+| `approved-machine-sizes` | Every service uses an approved size (vCPU and memory), when sizes are configured. |
+| `approved-registries` | Every service image starts with an approved registry prefix, when registries are configured. |
+| `required-labels` | The instance carries every required label. |
+| `minimum-tls` | Load balancers accept only the configured TLS version and newer. Enforced on AWS; a warning on providers where OrkStage cannot set it. |
+| `mandatory-logging` | Service logs are kept at least the configured number of days. Enforced on AWS (CloudWatch, rounded up to an accepted period); a warning elsewhere. |
 
 A `fail` result blocks the deployment. Custom templates go through the same policies.
+
+### Policies as data
+
+![The Policies page: the tenant policy form and the policy in effect](/screenshots/policies.png)
+
+The values behind these policies are data, set on **Policies** in the console or through the API:
+
+- **Platform staff** set the platform policy (`GET` and `PUT /policies`). It applies to every
+  tenant and is the only place where a built in policy can be turned off.
+- **Tenant owners and admins** set their tenant's policy (`GET` and `PUT /tenants/:id/policy`). It
+  can only tighten the platform policy: regions, sizes and registries narrow, budgets and replica
+  limits go down, required labels add up, and the TLS version and log retention go up.
+
+The page also shows the **policy in effect** for the tenant, which is what every preview and
+deployment is checked against. API keys cannot change policies.
+
+```json title="PUT /tenants/:id/policy"
+{
+  "allowedRegions": ["us-east-1", "sa-east-1"],
+  "machineSizes": [{ "cpu": 0.5, "memoryMiB": 1024 }, { "cpu": 1, "memoryMiB": 2048 }],
+  "approvedRegistries": ["123456789012.dkr.ecr.us-east-1.amazonaws.com/"],
+  "requiredLabels": ["team"],
+  "minTlsVersion": "1.3",
+  "minLogRetentionDays": 90
+}
+```
+
+### Instance labels
+
+Labels are key and value pairs on an instance, edited on its Overview tab or sent as `labels` when
+it is created or updated. They become tags on every cloud resource of the instance, next to the
+platform tags (which win on a clash and whose `platform` prefix is reserved). A policy can require
+some of them, for example `team`, so every resource can be traced to its owner and cost center.
 
 ## Connectivity
 

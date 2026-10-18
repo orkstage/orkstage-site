@@ -38,9 +38,9 @@ change this per resource with the `critical` field.
 
 ![The status page of a tenant during a partial outage of its storage component](/screenshots/status-page.png)
 
-Each tenant has a **private status page**, at `/status/<tenantId>` in the console. It groups
-resources into components that customers see: API, Workers, Database, Cache, Messaging, Storage,
-and DNS & TLS. The headline shows the worst component state.
+Each tenant has a **status page**, at `/status/<tenantId>` in the console. It groups resources into
+components that customers see: API, Workers, Database, Cache, Messaging, Storage, and DNS & TLS.
+The headline shows the worst component state.
 
 | Health | Status component |
 |---|---|
@@ -51,8 +51,46 @@ and DNS & TLS. The headline shows the worst component state.
 | `MAINTENANCE` | `MAINTENANCE` |
 | anything else | `UNKNOWN` |
 
-Members of the tenant and platform staff can read the page. Public pages and status subscriptions
-are on the roadmap.
+### Who can see it
+
+![Status page settings: visibility, public address, components and planned maintenance](/screenshots/status-settings.png)
+
+Tenant owners and admins choose under **Settings** on the status page
+(`/status/<tenantId>/settings`):
+
+| Visibility | Who reads the page |
+|---|---|
+| Owners and admins only | Platform staff and the tenant's owners and admins |
+| Every member of the tenant (default) | Everyone in the tenant, after signing in |
+| Anyone with the link | Also people without an account, at `/s/<address>` |
+
+A **public page** shows the title and description you set, component names and states, incidents
+and maintenance. It never shows resource ids, providers, regions or alert details. Incidents that
+OrkStage opened on its own read as a plain impact, such as "Degraded performance on Acme
+production", and their automatic updates as plain sentences. Incidents and updates written by
+people appear as written. Resolved incidents stay listed for 14 days. The public address is
+answered with its own rate limits, and an address that is not public looks exactly like one that
+does not exist.
+
+![The public status page of Acme with a planned database upgrade and the email subscription form](/screenshots/status-public.png)
+
+### Components
+
+The same settings page renames components (for example API to Checkout), hides them or changes
+their order. Their status still follows the resources behind them.
+
+### Email updates
+
+Anyone who can read the page can get an email when an incident opens, changes or resolves, and
+when maintenance is scheduled, starts and ends:
+
+- In the console, **Email me updates** on the status page subscribes your own address at once.
+- On a public page, people enter an address and confirm it from the email they receive.
+
+Every email ends with an unsubscribe link. People who subscribed on the public page stop getting
+emails while the page is not public. The settings page shows how many confirmed subscribers there
+are. Emails go through the SMTP server of the platform (see
+[configuration](/docs/self-hosting/configuration)).
 
 ## Automated incidents
 
@@ -164,4 +202,17 @@ updates, which appear on the incident page in order. Through the API, this needs
 
 ## Maintenance windows
 
-The data model includes maintenance windows, but no screen schedules them yet.
+Owners, admins and platform staff schedule maintenance under **Settings** on the status page: a
+title, a message, when it starts and ends, and which instance and components it covers (all of
+them when none are chosen).
+
+- Before it starts, the status page lists it as scheduled.
+- While it runs, its components show `MAINTENANCE`, and their resources open no incidents from
+  health or metric rules.
+- Subscribers and the tenant's owners and admins are told when it is scheduled, when it starts and
+  when it ends.
+- Cancelling a window that has not started deletes it. Ending a running one stops it now and keeps
+  it in the history.
+
+Through the API: `GET`, `POST` and `PATCH /maintenance-windows`, and `DELETE /maintenance-windows/:id`
+to cancel or end one. Changing them needs the `incidents:write` scope.

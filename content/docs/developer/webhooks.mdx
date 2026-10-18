@@ -18,6 +18,11 @@ them to post to chat, open tickets, start pipelines or feed your incident tools.
 | `instance.drift_detected` | The drift scan found changes made outside OrkStage. |
 | `incident.opened`, `incident.updated`, `incident.resolved` | An incident was opened, updated or resolved. |
 | `cloud_target.unhealthy` | A cloud target failed validation, either when someone validates it or when a deployment checks it before it starts. Sent once, when the target becomes unhealthy. |
+| `service.unhealthy` | A critical resource of an instance turned unhealthy. |
+| `maintenance.scheduled`, `maintenance.started`, `maintenance.completed` | Planned maintenance on a status page. |
+| `domain.verified`, `domain.verification_failed` | A custom domain's TXT record was found, or did not appear within 7 days. |
+| `domain.certificate_issued`, `domain.certificate_expiring` | A custom domain's certificate was issued, or expires in 30, 14, 7 or 1 days. |
+| `quota.exceeded` | Someone tried to create an instance beyond the tenant's instance limit. |
 | `ping` | Sent by the **Test** button in the console and by `POST /webhooks/:id/test`. You cannot subscribe to it. |
 
 ## Creating an endpoint
@@ -36,6 +41,10 @@ Content-Type: application/json
   "tenantId": "8a1c…"
 }
 ```
+
+`format` is `ORKSTAGE` by default. `SLACK` and `TEAMS` send a chat message to an incoming webhook
+of that service instead of the signed JSON event, see
+[notifications](/docs/user-guide/notifications#channels).
 
 The response contains `{ webhook, secret }`. You see the signing secret (`whsec_…`) **once**. The
 server stores it encrypted with `ENCRYPTION_KEY`. To rotate it, call
