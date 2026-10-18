@@ -99,6 +99,7 @@ devices out under **Your sessions** in the account menu.
 | `DEPLOY_LIMIT_PER_PROVIDER_REGION` | integer, `0` for no limit | `20` | Deployments touching one provider region at once, across all workers. Each cloud target also has its own limit. |
 | `HEALTH_CHECK_INTERVAL_SECONDS` | integer, at least 10 | `30` | Interval between health monitor ticks. |
 | `DRIFT_CHECK_INTERVAL_MINUTES` | integer, at least 0 | `360` | Interval between drift scans on real providers (one OpenTofu plan per applied resource). `0` turns scans off. |
+| `DNS_RESOLVERS` | comma separated addresses | system resolver | DNS servers the worker asks when it verifies [custom domains](/docs/user-guide/custom-domains), for example `1.1.1.1,8.8.8.8`. Set it when the system resolver is private and could hide the records customers create. |
 | `TOFU_IMAGE` | string | `ghcr.io/opentofu/opentofu:1.12.7` | Image for runner containers. |
 | `TOFU_MODULES_DIR` | path | | Module library on the worker host, mounted read only into runners. |
 | `TOFU_MODULES_IN_IMAGE` | boolean | `false` | The modules are baked into `TOFU_IMAGE`, so nothing is mounted. |
@@ -119,6 +120,8 @@ devices out under **Your sessions** in the account menu.
 | `SMTP_SECURE` | boolean | `false` | Use TLS from the start of the connection. |
 | `SMTP_USER`, `SMTP_PASSWORD` | string | none | Credentials for mail servers that require them. |
 | `EMAIL_FROM` | string | `OrkStage <noreply@example.local>` | Sender address. |
+| `EMAIL_TRANSPORT` | `smtp` or `ses` | `smtp` | `ses` sends through Amazon SES v2 with the worker's own AWS credentials and `AWS_REGION`; `EMAIL_FROM` must be a verified identity. |
+| `EMAIL_RATE_LIMIT_PER_HOUR` | integer from 1 to 10000 | `30` | Notification emails one person receives per hour at most; the rest stay in the console. |
 
 ## Secrets and integrations
 

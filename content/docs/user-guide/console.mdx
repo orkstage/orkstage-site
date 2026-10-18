@@ -39,8 +39,21 @@ perform, but the API checks every action again, so a hidden button is never the 
 
 ## The overview
 
-The overview shows instance and deployment counts, health, open incidents and trends. On a new
-installation it also shows an **onboarding checklist**:
+What the overview shows depends on who you are.
+
+**Tenant members** see their tenant: every instance with its status, last deployment and estimated
+monthly cost, its components with **uptime over the last 30 days** (one bar per day), the open
+incidents and the recent activity. With several tenants, a selector switches between them.
+
+![The customer overview: totals, instances with 30 days of uptime per component, incidents and activity](/screenshots/customer-overview.png)
+
+Uptime comes from the health checks of the last 30 days. A check counts as up when the resource
+was healthy or degraded, and as down when it was unhealthy. Unknown results and planned
+maintenance do not count either way. The same data is available at
+`GET /tenants/<tenantId>/overview`.
+
+**Platform staff** see instance and deployment counts, health, open incidents and trends across
+all tenants. On a new installation the overview also shows an **onboarding checklist**:
 
 1. Connect or validate a cloud target.
 2. Pick or forge a template.
@@ -53,7 +66,7 @@ installation it also shows an **onboarding checklist**:
 ## Instances
 
 The instance list shows the status, health, environment, template version and tenant of each
-instance. An instance page has five tabs:
+instance. An instance page has these tabs:
 
 ![The instance list with status, health, environment, template and tenant](/screenshots/instances.png)
 
@@ -62,6 +75,8 @@ instance. An instance page has five tabs:
 | Overview | Details, variables, the topology diagram, resources with their placement, outputs and health |
 | Plan & cost | A fresh preview: resolved resources, policies, connectivity, cost estimate and the diff |
 | Deployments | Every deployment of this instance, with status and duration |
+| Triggers | Provider actions you can run on the instance ([triggers](/docs/user-guide/triggers)) |
+| Domains | The platform subdomain and your [custom domains](/docs/user-guide/custom-domains) |
 | Logs | Recent log lines per resource (CloudWatch Logs on AWS, simulated elsewhere) |
 | Metrics | CPU, memory, requests, latency and errors per resource |
 

@@ -1,38 +1,70 @@
 ---
 title: Notifications
-description: Who OrkStage notifies about deployments and incidents, through which channels (the console, email, signed webhooks), and what is not available yet.
+description: Who OrkStage notifies about deployments, incidents, maintenance and domains, through which channels, and how each person chooses what reaches them.
 ---
 
 ## Channels
 
-| Channel | Status |
+| Channel | How |
 |---|---|
-| In the console (the bell in the header) | Available |
-| Email (SMTP, through an outbox) | Available |
-| [Webhooks](/docs/developer/webhooks/) (HTTP POST signed with HMAC) | Available |
-| Slack, Microsoft Teams | Planned |
+| In the console (the bell in the header) | Always available |
+| Email | SMTP or Amazon SES, through an outbox with retries and a per person rate limit |
+| [Webhooks](/docs/developer/webhooks/) | HTTP POST of each event as JSON, signed with HMAC |
+| Slack | A message to a Slack incoming webhook |
+| Microsoft Teams | A message to a Teams incoming webhook or workflow |
+
+Slack and Teams are webhook endpoints with another format. Tenant owners and admins add them under
+**Integrations**, choose **Send as** Slack message or Microsoft Teams message, paste the incoming
+webhook URL and pick the events. The message carries the title, a short text and a link to the
+console. The URL must be one of the service's own hosts (`hooks.slack.com` for Slack;
+`webhook.office.com`, `logic.azure.com` or `powerplatform.com` for Teams). These messages are not
+signed, because Slack and Teams do not check signatures; the retries, the test button and the
+automatic disabling after repeated failures work as for other webhooks.
 
 ## Who receives what
 
 Notifications go to the tenant's **owners and admins** and to **platform owners and admins**.
 Examples:
 
-- a deployment started, succeeded or failed;
-- a production deployment is waiting for approval;
-- an instance became degraded, or drift was detected on one of its resources;
-- an incident was opened, updated or resolved.
+- a deployment started, succeeded or failed, or a production deployment waits for approval;
+- an instance became degraded, a critical service turned unhealthy, or drift was found;
+- an incident was opened, updated or resolved;
+- maintenance was scheduled, started or completed;
+- a custom domain was verified or could not be verified, its certificate was issued, or it expires
+  in 30, 14, 7 or 1 days;
+- someone tried to create an instance beyond the tenant's instance limit.
 
-Each notification in the console links to its deployment, instance or incident. Mark it as read from
-the bell. The matching API routes are `GET /notifications` and `POST /notifications/:id/read`.
+Each notification in the console links to its deployment, instance, incident or page. Mark it as
+read from the bell. The matching API routes are `GET /notifications` and
+`POST /notifications/:id/read`.
+
+People who follow a status page get their own emails about incidents and maintenance, see
+[status pages](/docs/user-guide/status-and-incidents#email-updates).
+
+## Notification settings
+
+**Notification settings** in the console menu lists every event with two switches: **Console**
+and **Email**. Everything is on until you turn it off, and your choices apply to you only. The API
+is `GET` and `PUT /me/notification-preferences`:
+
+```json title="PUT /me/notification-preferences"
+{ "preferences": [{ "event": "deployment.started", "channel": "email", "enabled": false }] }
+```
+
+Slack and Teams messages go to channels of the whole tenant, so they are set per endpoint under
+Integrations, not per person.
 
 ## Email
 
-The worker queues emails in an outbox and sends them through SMTP (`SMTP_HOST`, `SMTP_PORT`,
-`SMTP_SECURE`, `EMAIL_FROM`). It retries a failed email later, up to 5 attempts in total. In the
-local stack, emails land in Mailpit at http://localhost:8025.
+The worker queues emails in an outbox and retries a failed one later, up to 5 attempts in total.
 
-## Not yet available
+| Variable | Meaning |
+|---|---|
+| `EMAIL_TRANSPORT` | `smtp` (default) or `ses` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` | The SMTP server, when the transport is `smtp` |
+| `EMAIL_FROM` | The sender address; with SES it must be a verified identity |
+| `EMAIL_RATE_LIMIT_PER_HOUR` | Emails one person receives per hour at most (default 30); the rest stay in the console |
 
-- Notification preferences per user. The data model stores them, but no screen or API sets them
-  yet.
-- Slack and Teams channels. Until then, point a webhook at a receiver that forwards to them.
+With `ses`, the worker sends through Amazon SES v2 with its own AWS credentials and `AWS_REGION`,
+never with the role of a cloud target. In the local stack, emails land in Mailpit at
+http://localhost:8025.
