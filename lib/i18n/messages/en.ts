@@ -52,6 +52,9 @@ export const en = {
     lead: 'Write the environment once: services, Postgres, cache, queue, storage, ingress and DNS. Bind each resource to the account and region that fits it. Review the plan, the policy results and an approximate monthly cost. Then OrkStage applies it with OpenTofu and keeps watching it.',
     primary: 'Get started',
     secondary: 'View the source on GitHub',
+    alphaLabel: 'Alpha.',
+    alpha: 'The whole platform is being tested and validated. Features and provider integrations are released gradually, and APIs may still change.',
+    next: 'Planned: AI mini agents attached to templates (security, FinOps, insights) that review plans and deployments in read only mode, with your own Anthropic, OpenAI or Gemini API key.',
     facts: {
       licenseLabel: 'License',
       licenseValue: 'AGPL-3.0',
@@ -106,7 +109,7 @@ export const en = {
       unsatisfiable: 'Across clouds in `private-required` mode. The plan fails until you change the mode or the placement.',
     },
     status:
-      'AWS provisioning is real (OpenTofu, verified against MiniStack). Azure and OCI run on a deterministic simulator today and are labeled as simulated everywhere. Their adapters are on the roadmap.',
+      'AWS provisioning is real (OpenTofu, verified against MiniStack). The Azure, Google Cloud, OCI and other adapters are in preview behind feature flags until they are validated on live accounts. A deterministic simulator lets you try any topology without an account, always labeled as simulated.',
   },
   trust: {
     label: 'Governance',
@@ -138,11 +141,11 @@ export const en = {
     },
     incidents: {
       title: 'Incidents',
-      text: 'Alert rules are stored as data. They open one incident per resource, with deduplication and a cooldown, and resolve it when health returns.',
+      text: 'Alert rules are configurable, on health checks or on metrics. They open one incident per resource, with deduplication and a cooldown, and resolve it when the problem clears.',
     },
     statusPage: {
       title: 'Status page',
-      text: 'Each tenant gets a private status page that maps resources to the components your customers see: API, workers, database.',
+      text: 'Each tenant gets a status page (private, for members or public) that maps resources to the components your customers see: API, workers, database.',
     },
     notifications: {
       title: 'Notifications',
@@ -188,7 +191,7 @@ export const en = {
       },
       provisioning: {
         area: 'Provisioning',
-        community: 'AWS through OpenTofu, simulated Azure and OCI, dependency graph, retries, drift flagging',
+        community: 'AWS through OpenTofu, other providers in preview, simulator, dependency graph, retries, drift detection',
         enterprisePlanned: 'Private connectivity provisioning (VPN, interconnect)',
       },
       identity: {

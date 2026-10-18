@@ -51,6 +51,9 @@ export const ptBR: Messages = {
     lead: 'Descreva o ambiente uma vez: serviços, Postgres, cache, fila, storage, ingress e DNS. Associe cada recurso à conta e à região que fazem sentido para ele. Revise o plano, o resultado das políticas e uma estimativa do custo mensal. Depois o OrkStage aplica tudo com OpenTofu e continua de olho.',
     primary: 'Começar',
     secondary: 'Ver o código no GitHub',
+    alphaLabel: 'Alpha.',
+    alpha: 'A plataforma inteira está em fase de testes e validação. Funcionalidades e integrações com provedores são liberadas aos poucos, e as APIs ainda podem mudar.',
+    next: 'No roadmap: mini agentes de IA vinculados aos templates (segurança, FinOps, insights) que analisam planos e deploys apenas em modo leitura, usando a sua própria API key da Anthropic, OpenAI ou Gemini.',
     facts: {
       licenseLabel: 'Licença',
       licenseValue: 'AGPL-3.0',
@@ -84,7 +87,7 @@ export const ptBR: Messages = {
       },
       observe: {
         title: 'Observação',
-        text: 'Os health checks se consolidam na instância e em uma status page privada. Quando um componente crítico falha, o OrkStage abre um incidente, avisa os responsáveis no console e por email e encerra o incidente quando a saúde volta.',
+        text: 'Os health checks são consolidados na instância e em uma página de status. Quando um componente crítico falha, o OrkStage abre um incidente, avisa os responsáveis no console e por email e resolve o incidente quando o componente volta a ficar saudável.',
       },
     },
   },
@@ -105,7 +108,7 @@ export const ptBR: Messages = {
       unsatisfiable: 'Entre nuvens, no modo `private-required`. O plano falha até você mudar o modo ou o placement.',
     },
     status:
-      'O provisionamento na AWS é real (OpenTofu, validado com MiniStack). Azure e OCI rodam hoje em um simulador determinístico e aparecem marcados como simulados em todo lugar. Os adapters dessas nuvens estão no roadmap.',
+      'O provisionamento na AWS é real (OpenTofu, validado com MiniStack). Os adapters de Azure, Google Cloud, OCI e outros provedores estão em preview, atrás de feature flags, até serem validados em contas reais. Um simulador determinístico permite testar qualquer topologia sem conta, sempre sinalizado como simulado.',
   },
   trust: {
     label: 'Governança',
@@ -137,11 +140,11 @@ export const ptBR: Messages = {
     },
     incidents: {
       title: 'Incidentes',
-      text: 'As regras de alerta ficam guardadas como dados. Elas abrem um incidente por recurso, com deduplicação e cooldown, e encerram o incidente quando a saúde volta.',
+      text: 'As regras de alerta são configuráveis, por health check ou por métrica. Elas abrem um incidente por recurso, com deduplicação e cooldown, e o resolvem quando o problema passa.',
     },
     statusPage: {
-      title: 'Status page',
-      text: 'Cada tenant tem uma status page privada que liga os recursos aos componentes que seus clientes enxergam: API, workers, banco de dados.',
+      title: 'Página de status',
+      text: 'Cada tenant tem uma página de status (privada, para membros ou pública) que traduz os recursos nos componentes que seus clientes enxergam: API, workers, banco de dados.',
     },
     notifications: {
       title: 'Notificações',
@@ -187,7 +190,7 @@ export const ptBR: Messages = {
       },
       provisioning: {
         area: 'Provisionamento',
-        community: 'AWS via OpenTofu, Azure e OCI simulados, grafo de dependências, retries, sinalização de drift',
+        community: 'AWS via OpenTofu, demais provedores em preview, simulador, grafo de dependências, retentativas, detecção de drift',
         enterprisePlanned: 'Provisionamento de conectividade privada (VPN, interconnect)',
       },
       identity: {
