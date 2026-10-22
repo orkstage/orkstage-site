@@ -11,7 +11,7 @@ design.
 ## The isolated runner
 
 - The worker never runs OpenTofu in its own process. Every `tofu` command runs in a **throwaway
-  container**: the pinned `ghcr.io/opentofu/opentofu:1.12.7` image, or the `tofu-runner` image with
+  container**: the pinned `ghcr.io/opentofu/opentofu:1.12.9` image, or the `tofu-runner` image with
   the modules baked in.
 - The module library is mounted read only, or baked into the image. Providers come from a plugin
   cache volume that all runners share.
@@ -95,7 +95,7 @@ the middle of an apply can leave it behind; the next deployment of that resource
 deployment of that instance is still running. Then, from the worker host:
 
 ```bash
-docker run --rm -it -v orkstage-tofu-work:/workspace -w /workspace/<directory>   -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN   ghcr.io/opentofu/opentofu:1.12.7 force-unlock <lock id>
+docker run --rm -it -v orkstage-tofu-work:/workspace -w /workspace/<directory>   -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN   ghcr.io/opentofu/opentofu:1.12.9 force-unlock <lock id>
 ```
 
 The directory is the resource's working directory under `TOFU_WORK_DIR` (its name is printed in the
