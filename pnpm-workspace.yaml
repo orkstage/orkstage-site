@@ -15,3 +15,8 @@ allowBuilds:
 
 # Ignore package versions published less than a day ago (minutes).
 minimumReleaseAge: 1440
+
+# Security floors for transitive dependencies. Remove once the parents require them.
+overrides:
+  # undici below 7.30.1 (October 2026 fixes), through fumadocs-openapi > @scalar/json-magic.
+  undici: '^7.30.1'
