@@ -20,8 +20,8 @@ description: Security controls built into OrkStage, a hardening checklist for ho
 | Logging | Pino redacts tokens, secrets, cookies and authorization headers. Errors return a code and a correlation id, never a stack trace. |
 | Rate limits | 600 requests per minute per client overall. Stricter limits apply to login, deploy, destroy, target validation, template publishing, API key creation, imports and webhook tests. |
 | Audit | Append only. A Postgres trigger rejects `UPDATE` and `DELETE` on the audit table. |
-| Headers | Helmet with a restrictive Content Security Policy. |
-| Supply chain | Only pnpm build scripts on an allowlist run. Telemetry during install is denied. Very recent releases are avoided (minimum release age). Container images are pinned by digest where it matters (MiniStack, OpenTofu). |
+| Headers | Content Security Policy without inline scripts. The console gives every page a fresh nonce: only scripts that carry it run, and scripts they load inherit trust (`'strict-dynamic'`). The API serves JSON, so its policy allows no inline script or style, except on the Swagger UI pages (`/api/docs`). Clickjacking protection, `nosniff`, a strict referrer policy and HSTS behind TLS. |
+| Supply chain | Only pnpm build scripts on an allowlist run. Telemetry during install is denied. Very recent releases are avoided (minimum release age). Container images are pinned by digest where it matters (MiniStack, OpenTofu). CI runs a dependency audit, CodeQL, lint, and Trivy on the lockfiles, the platform image and the OpenTofu runner image. The runtime image carries neither npm nor the TypeScript compiler. |
 
 ## Hardening checklist
 
