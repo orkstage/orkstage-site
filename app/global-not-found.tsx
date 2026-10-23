@@ -46,7 +46,9 @@ export default function GlobalNotFound() {
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: a constant theme script, no user input. */}
         <script dangerouslySetInnerHTML={{ __html: script }} />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: constant styles, no user input. */}
         <style dangerouslySetInnerHTML={{ __html: css }} />
       </head>
       <body className="bg-obsidian text-ink">

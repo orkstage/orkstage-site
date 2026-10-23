@@ -39,7 +39,7 @@ function L({ children }: { children?: ReactNode }) {
 export function TerminalSession({ label, tag }: { label: string; tag: string }) {
   return (
     <Window title="~/shop · ork" meta={<span className="rounded border border-hairline px-1.5 py-px text-[10px] uppercase tracking-wider">{tag}</span>}>
-      <pre className={pre} aria-label={label}>
+      <pre className={pre} role="figure" aria-label={label}>
         <P>ork scan</P>
         <D>Scanned 38 of 214 files (91.2 KiB): walk 4 ms, scan 12 ms · terraform 6 · compose 1 · dockerfile 2</D>
         <L>Resources (7)</L>
@@ -86,7 +86,7 @@ export function TemplateExcerpt({ label }: { label: string }) {
   const c = 'text-ink-subtle';
   return (
     <Window title="templates/multicloud-reference.yaml" meta="platform/v1">
-      <pre className={pre} aria-label={label}>
+      <pre className={pre} role="figure" aria-label={label}>
         <L>
           <span className={k}>placements</span>:
         </L>
@@ -166,7 +166,7 @@ export function PlanText({ label }: { label: string }) {
   const a = 'text-mint';
   return (
     <Window title="Deployment plan" meta="risk: low">
-      <pre className={pre} aria-label={label}>
+      <pre className={pre} role="figure" aria-label={label}>
         <L>Deployment Plan</L>
         <L />
         <L>Instance: Acme Production</L>
@@ -231,7 +231,7 @@ export function DeployEvents({ label }: { label: string }) {
   const tone = (lvl: string) => (lvl === 'WARN' ? 'text-forge' : lvl === 'ERROR' ? 'text-danger' : 'text-ink-subtle');
   return (
     <Window title="deployment 9b07c4e1 · events" meta="AWAITING_APPROVAL">
-      <pre className={pre} aria-label={label}>
+      <pre className={pre} role="figure" aria-label={label}>
         {rows.map(([t, lvl, step, msg]) => (
           <L key={t + msg}>
             <span className="text-ink-subtle">{t} </span>
