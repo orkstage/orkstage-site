@@ -113,8 +113,19 @@ Cross-cloud
 
 ## Cost estimate
 
-The estimate uses static list prices from each capability catalog (on demand, monthly, in USD). It
-is always labeled **approximate** and is not an invoice. Its confidence is `approximate` when every
+The estimate prices each resource **in its own region**, with list prices (on demand, monthly, in
+USD), from the first of these that has them:
+
+1. **Live prices** from the provider's pricing API. On AWS that is the Pricing API, read with the
+   target's role, kept for a day and never waited on for more than a few seconds.
+2. **The bundled table for the region**, shipped with each release. For AWS it covers 12 regions
+   and is generated from AWS's public price list.
+3. **The default prices** of the capability, when there is no table for the region; the line says
+   so.
+
+Each line names its source and region, and the table lists every source with its date. A few AWS
+prices are derived rather than read (the NAT gateway follows the region's load balancer prices) and
+say so. The estimate is always labeled **approximate** and is not an invoice. Its confidence is `approximate` when every
 resource has a price, `partial` when some do not, and `unavailable` when none do. Lines are grouped
 by category: compute, database, cache, storage, network and messaging.
 

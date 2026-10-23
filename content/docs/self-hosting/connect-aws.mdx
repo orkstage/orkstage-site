@@ -91,6 +91,8 @@ In short, the role may:
   `/orkstage/`;
 - read and write the OpenTofu state bucket `orkstage-tfstate-<account>-*`, and the bucket named in
   `StateBucketName` when you set it;
+- read current list prices (`pricing:GetProducts`) for cost estimates; without it, estimates use the
+  bundled price tables;
 - pass `ork-*` roles to ECS tasks and EC2 only;
 - call `iam:SimulatePrincipalPolicy` **on itself**, so OrkStage can check permissions before it
   deploys.
