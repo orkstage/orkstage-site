@@ -118,6 +118,10 @@ is always labeled **approximate** and is not an invoice. Its confidence is `appr
 resource has a price, `partial` when some do not, and `unavailable` when none do. Lines are grouped
 by category: compute, database, cache, storage, network and messaging.
 
+When the `COST_ESTIMATION` feature flag is off for a tenant, plans and deployments show no
+estimate (`unavailable`, with no lines) and the overview shows no cost. The monthly budget policy
+still checks the estimate.
+
 ## The plan and its risk
 
 The diff against known resources lists each resource as `CREATE`, `UPDATE`, `DELETE` or `NOOP`,

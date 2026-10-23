@@ -70,7 +70,9 @@ OrkStage opened on its own read as a plain impact, such as "Degraded performance
 production", and their automatic updates as plain sentences. Incidents and updates written by
 people appear as written. Resolved incidents stay listed for 14 days. The public address is
 answered with its own rate limits, and an address that is not public looks exactly like one that
-does not exist.
+does not exist. A platform administrator can turn public pages off with the `PUBLIC_STATUS_PAGES`
+feature flag, for the platform or one tenant: the page then cannot be made public, and a public
+page stops being served until the flag is on again.
 
 ![The public status page of Acme with a planned database upgrade and the email subscription form](/screenshots/status-public.png)
 
@@ -94,7 +96,9 @@ are. Emails go through the SMTP server of the platform (see
 
 ## Automated incidents
 
-Alert rules decide when OrkStage opens an incident on its own. There are two kinds:
+Alert rules decide when OrkStage opens an incident on its own (unless the `AUTOMATED_INCIDENTS`
+feature flag is off for the tenant: then rules still notify and resolve open incidents, but open
+none). There are two kinds:
 
 - **Health rules** count failed health checks in a row.
 - **Metric rules** compare a statistic of a metric (average, maximum or minimum) over a window of

@@ -181,6 +181,15 @@ on by default and turned off for the platform or for one tenant: `MULTI_CLOUD` (
 more than one provider), `MULTI_REGION` (more than one region of a provider), `AUTOSCALING` and
 `CUSTOM_DOMAINS`.
 
+Four more flags switch features themselves, also on by default:
+
+| Flag | When it is off for a tenant |
+|---|---|
+| `DRIFT_DETECTION` | The scheduled drift scan skips the tenant's instances. |
+| `AUTOMATED_INCIDENTS` | Alert rules still notify and resolve open incidents, but open none: people declare incidents. |
+| `COST_ESTIMATION` | Plans, previews, deployments and the overview show no cost. The monthly budget policy still checks the estimate. |
+| `PUBLIC_STATUS_PAGES` | The status page cannot be made public, and a public one stops being served (its settings stay). |
+
 The compiler checks limits and features every time an instance is previewed or deployed, so an
 instance that no longer fits fails before anything changes. Templates do not name plans or
 tenants: any template whose resources fit can be used by any tenant
