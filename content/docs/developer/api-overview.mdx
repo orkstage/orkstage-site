@@ -84,17 +84,20 @@ and webhook deliveries, so quote it when you report a problem.
 
 ## Pagination
 
-List endpoints that can grow use cursors and return the newest items first:
+Every list endpoint uses cursors:
 
 ```http
-GET /api/v1/deployments?limit=25&cursor=<id>
+GET /api/v1/deployments?limit=25&cursor=<id>&sort=-createdAt
 ```
 
 ```json
 { "items": [ … ], "nextCursor": "b7c1…" }
 ```
 
-Pass `nextCursor` as `cursor` until it is `null`.
+Pass `nextCursor` as `cursor` until it is `null`. `limit` goes up to 100. `sort` names a field the list
+allows, such as `name` or `createdAt`, with a leading `-` for descending order; any other field is
+refused with `400 INVALID_SORT`. Without `sort`, instances, deployments, incidents, API keys and
+webhooks come newest first, tenants and templates by name, and cloud targets oldest first.
 
 ## Long running operations
 
@@ -113,8 +116,25 @@ You can also subscribe to [webhooks](/docs/developer/webhooks/) for `deployment.
 
 Deployments are keyed by tenant, instance and a hash of the desired state. While an instance has an
 operation in progress, further deploy or destroy requests get `409 INSTANCE_BUSY`, and the worker
-never recreates resources that have already converged. The API accepts an `Idempotency-Key` header
-but ignores it for now.
+never recreates resources that have already converged.
+
+Any `POST`, `PUT`, `PATCH` or `DELETE` may also carry an `Idempotency-Key` header (8 to 200 letters,
+digits or `-`, `_`, `.`, `:`), so a retry after a timeout or a dropped connection does the work only
+once:
+
+```http
+POST /api/v1/instances/<id>/deploy
+Idempotency-Key: 6f1c2a4e-deploy-2026-10-23
+```
+
+- The first successful response is kept for 24 hours, per caller (a person or an API key). A retry
+  of the same request gets the same response again, with the header `idempotent-replayed: true`.
+- The same key for a different request is refused with `422 IDEMPOTENCY_KEY_REUSED`.
+- A retry while the first request still runs gets `409 IDEMPOTENCY_IN_PROGRESS`; retry later.
+- A request that failed keeps nothing, so retrying it runs it again.
+
+The console sends a key on deploys, destroys, upgrades, instance creation, trigger runs and
+invitations, and the `ork` CLI on every change it makes.
 
 ## Tenancy
 
