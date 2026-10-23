@@ -139,7 +139,8 @@ destroyed. Only customer owners and admins, and platform owners and admins, can 
 instance. Destroying a `production` instance also waits for an approval before anything is
 deleted; cancelling it at that point leaves the instance `READY`.
 
-<Callout type="warn">
-  The backup phase checks that a backup policy exists. It does not yet verify that a backup can be
-  restored.
-</Callout>
+A `production` instance whose databases have no backup from the last day is not destroyed: the
+request is refused with `BACKUP_NOT_RECENT` and the console lists the databases. Run a backup or
+wait for the next one, or tick **Destroy without a recent backup** (API:
+`withoutRecentBackup: true`). Where the provider supports it, a final snapshot is still taken. See
+[Disaster recovery](/docs/self-hosting/disaster-recovery/).

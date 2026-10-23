@@ -37,7 +37,11 @@ Test your restores. Until you have restored a backup, you do not know that it wo
 - Templates declare database backups (`backup.enabled`, and `retentionDays` up to 35). The
   `production-backups` policy fails any production database without them. On AWS, these settings
   set the RDS automated backup retention.
-- The tenant plan caps retention (`backupRetentionDays`).
-- The destroy workflow has a **backup** phase that checks the backup policy. It does **not** yet
-  verify that a backup exists and can be restored.
-- A backups API (last successful backup, restore to a new instance) is on the roadmap.
+- A tenant's `maxBackupRetentionDays` limit caps the retention.
+- The worker reads each database's backups on every health tick (last and next backup, restore
+  window) and sends `backup.failed` when the last backup failed or is overdue.
+- A `restore` trigger action restores a database to a point in time as a new instance.
+- A destroy of a production instance waits for a recent backup unless you confirm it without one.
+
+Recovery objectives, frequencies and the recovery steps for customer environments are on
+[Disaster recovery](/docs/self-hosting/disaster-recovery/).

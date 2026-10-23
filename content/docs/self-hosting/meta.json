@@ -13,6 +13,7 @@
     "security",
     "upgrades",
     "backups",
+    "disaster-recovery",
     "observability",
     "troubleshooting"
   ]

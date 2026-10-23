@@ -60,6 +60,26 @@ trigger and instance, replaces it after every deployment (so a changed or remove
 effect with the next deploy) and removes it when the instance is destroyed. Scheduled runs are
 skipped while the instance is not `READY` or `DEGRADED`.
 
+## Restore a database
+
+On AWS, a `database.postgresql` resource offers the `restore` action. It restores the database to
+a point in time as a **new** RDS instance next to the original (same subnet group and security
+groups), and leaves the original untouched:
+
+```yaml title="template excerpt"
+triggers:
+  - name: restore-database
+    description: Restore the database to a point in time as a new instance.
+    resource: database
+    action: restore
+    on: { manual: true }
+```
+
+Run it with an optional `pointInTime` parameter (an ISO time inside the restore window shown on
+the database card); without it, the latest restorable time is used. OrkStage does not manage the
+copy: check it, point the application at it, and delete it when you no longer need it. The
+simulator runs the same action for tests.
+
 ## Runs and notifications
 
 Every run is stored with its source (`MANUAL`, `SCHEDULE`, `WEBHOOK`), parameters, status and
