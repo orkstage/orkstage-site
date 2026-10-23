@@ -271,15 +271,18 @@ connectivity:
 ## Triggers
 
 A trigger is a named action on one deployed resource, with default parameters: redeploy a
-frontend, restart a service, take a database restore point. The provider decides which actions
-exist; the console and `GET /instances/{id}/triggers` list them with their parameters.
+frontend, restart a service, take a database restore point. Prefer a **catalog action**
+(`service.restart`, see [Triggers](/docs/user-guide/triggers/#catalog-actions)): it means the same on
+every provider. A provider's own action name works too. The console and
+`GET /instances/{id}/triggers` list each trigger with its parameters, risk and required role.
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
 | `name` | id | required | Unique in the template. |
 | `description` | string | | |
 | `resource` | id | required | The resource the action runs on. |
-| `action` | string | required | For example `redeploy`, `restart`, `rollback`, `purge-cache`, `backup`. |
+| `action` | string | required | A catalog action such as `service.restart` or `database.snapshot`, or a provider's own name such as `promote`. |
+| `role` | string | | `CustomerDeveloper`, `CustomerAdmin` or `CustomerOwner`: raises the role needed to run it, never lowers it. |
 | `params` | map | `{}` | Default parameters, checked against the action when it runs. |
 | `overridable` | string[] | `[]` | Parameters a caller may change at run time. Anything else is rejected. |
 | `on.manual` | boolean | `true` | Run from the console or the CLI. |
@@ -296,8 +299,13 @@ triggers:
     on: { manual: true, webhook: true }
   - name: nightly-backup
     resource: database
-    action: backup
+    action: database.snapshot
     on: { manual: false, schedule: '0 3 * * *' }
+  - name: scale-api
+    resource: api
+    action: service.scale
+    params: { replicas: 2 }
+    overridable: [replicas]
 ```
 
 See [triggers](/docs/user-guide/triggers/) for running them and following their runs.

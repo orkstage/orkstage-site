@@ -1,15 +1,13 @@
 ---
 title: Triggers
-description: Run provider actions on a deployed instance (redeploy, restart, rollback, purge cache, backup) by hand, from CI with an API key, or on a schedule.
+description: Run actions on a deployed instance (restart, scale, redeploy, rollback, snapshot, restore) by hand, from CI with an API key, or on a schedule.
 ---
 
 Triggers are declared in the template ([reference](/docs/developer/template-reference/#triggers))
 and apply to every instance built from it. Each one runs a single action on a single resource
-through the provider that owns it, so the action and its parameters depend on the provider: a
-Vercel project offers `redeploy`, `promote`, `rollback` and `purge-cache`; a Render service offers
-`redeploy`, `restart`, `rollback`, `scale`, `suspend` and `resume`; a Supabase database offers
-`restart`, `pause`, `restore` and `backup`; a Cloud Run or Container Apps service offers `redeploy`
-or `restart`.
+through the provider that owns it. Name a **catalog action** and the same trigger works on every
+provider that has it; a provider's own action name (Vercel's `promote`, Render's `suspend`) runs
+only there.
 
 A trigger starts work at the provider and records the result: the provider deployment or backup
 it started, a link when there is one, and a message. It does not wait for a build to finish; the
@@ -25,6 +23,32 @@ flowchart LR
   adapter --> provider["Provider action<br/>redeploy, restart, backup"]
   worker --> result["Run result, audit,<br/>trigger.succeeded or trigger.failed"]
 ```
+
+## Catalog actions
+
+The catalog gives every provider the same names, risks and parameters, and it is the only set of
+actions OrkStage's planned AI agents may propose (they never run one themselves).
+
+| Action | Resource | Risk | What it does |
+|---|---|---|---|
+| `service.restart` | service | safe | Fresh instances of the running release; old ones drain as new ones turn healthy. |
+| `service.redeploy` | service, frontend | safe | A new rollout from the source. |
+| `service.scale` | service | disruptive | Sets `replicas`, within the template autoscaling bounds or up to the tenant's replica limit. |
+| `cdn.invalidate` | frontend | safe | Drops cached responses. |
+| `database.reboot` | database | disruptive | Reboots the server; connections drop for a short while. |
+| `database.snapshot` | database | safe | An on demand backup, kept until deleted. |
+| `database.restore` | database | safe | A point in time copy next to the original (`pointInTime`). |
+| `release.rollback` | service, frontend | disruptive | Returns to an earlier deployment (`deployment`). |
+
+On AWS, ECS services offer `service.restart` and `service.scale`, and RDS databases offer
+`database.reboot`, `database.snapshot` and `database.restore`. Other providers map their own actions
+onto the catalog: Render's `scale` with `numInstances` is `service.scale` with `replicas`, and a
+Supabase `restart` is `database.reboot`. The trigger list shows the provider and the risk of each
+trigger.
+
+**Who may run it.** A `safe` action needs the developer role, anything else (and any provider
+specific action) the admin role. A trigger's `role` field can ask for more, never for less. A run
+without the role is refused with `403 ACTION_ROLE_REQUIRED`.
 
 ## Run from the console
 
