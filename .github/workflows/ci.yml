@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Daily rebuild: the static export carries the GitHub star count of its build (lib/github.ts), so
+  # this refreshes it; the publish job deploys only when the exported site changed.
+  schedule:
+    - cron: '17 6 * * *'
   # A manual run scans the whole history for secrets (pushes and pull requests scan only their commits).
   workflow_dispatch:
 
@@ -58,7 +62,7 @@ jobs:
   # deployment). After every green build of main, the exported site is committed there on top of
   # the previous deployment, so Hostinger's `git pull` is always a fast forward.
   publish-hostinger:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
