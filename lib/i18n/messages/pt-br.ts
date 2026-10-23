@@ -4,18 +4,20 @@ import type { Messages } from './en';
  * Português do Brasil. Same keys as `en.ts` (enforced by the `Messages` type and by
  * `pnpm check:i18n`). Written for engineers and tech managers: "você", and the English terms
  * Brazilian teams actually use (deploy, pipeline, template, CLI, API, state, drift).
+ * The slogan does not translate "stage" as "palco": the brand keeps its name and the Portuguese
+ * line says what it means (one place for every cloud).
  */
 export const ptBR: Messages = {
   meta: {
     title: 'OrkStage: control plane multicloud e open source',
     description:
       'Descreva o ambiente uma vez, coloque cada recurso na nuvem certa, revise plano, políticas e custo e faça o deploy com OpenTofu. Open source.',
-    ogImageAlt: 'OrkStage: orquestre todas as nuvens de um só palco. Control plane multicloud e open source.',
+    ogImageAlt: 'OrkStage: orquestre todas as suas nuvens em um só lugar. Control plane multicloud e open source.',
     notFoundTitle: 'Página não encontrada',
     notFoundDescription: 'Este endereço não corresponde a nenhuma página de orkstage.io. A documentação e a página inicial levam a todo o conteúdo do site.',
   },
   og: {
-    headline: 'Orquestre todas as nuvens de um só palco.',
+    headline: 'Orquestre todas as suas nuvens em um só lugar.',
     subline: 'Control plane multicloud e open source. Template, plano, deploy e operação.',
     footer: 'Control plane multicloud e open source.',
   },
@@ -24,9 +26,14 @@ export const ptBR: Messages = {
     homeLabel: 'Página inicial do OrkStage',
     mainNav: 'Principal',
     footerNav: 'Rodapé',
+    menu: 'Menu',
     docs: 'Docs',
     api: 'API',
+    enterprise: 'Enterprise',
     github: 'GitHub',
+    star: 'Star',
+    starLabel: 'Dar uma estrela ao orkstage/orkstage no GitHub',
+    starsUnit: 'estrelas',
     getStarted: 'Começar',
     docsLanguageNote: 'A documentação está em inglês.',
   },
@@ -40,204 +47,139 @@ export const ptBR: Messages = {
   tags: {
     available: 'disponível',
     planned: 'planejado',
-    preview: 'Preview',
-    approximate: 'aproximado',
     cliPreview: 'CLI preview',
-    status: 'Status',
   },
   hero: {
+    badge: 'Alpha',
     eyebrow: 'Control plane multicloud e open source',
-    title: 'Orquestre todas as nuvens de um só palco.',
-    lead: 'Descreva o ambiente uma vez: serviços, Postgres, cache, fila, storage, ingress e DNS. Associe cada recurso à conta e à região que fazem sentido para ele. Revise o plano, o resultado das políticas e uma estimativa do custo mensal. Depois o OrkStage aplica tudo com OpenTofu e continua de olho.',
+    title: 'Orquestre todas as suas nuvens em um só lugar.',
+    lead: 'O OrkStage faz o deploy e opera seus ambientes nas nuvens que você escolher. Descreva o ambiente uma vez, revise plano, políticas e custo, e deixe o OpenTofu aplicar enquanto o OrkStage acompanha saúde, incidentes e drift.',
     primary: 'Começar',
-    secondary: 'Ver o código no GitHub',
-    alphaLabel: 'Alpha.',
-    alpha: 'A plataforma inteira está em fase de testes e validação. Funcionalidades e integrações com provedores são liberadas aos poucos, e as APIs ainda podem mudar.',
-    next: 'No roadmap: mini agentes de IA vinculados aos templates (segurança, FinOps, insights) que analisam planos e deploys apenas em modo leitura, usando a sua própria API key da Anthropic, OpenAI ou Gemini.',
-    facts: {
-      licenseLabel: 'Licença',
-      licenseValue: 'AGPL-3.0',
-      runsLabel: 'Hospedagem',
-      runsValue: 'Sua infraestrutura',
-      engineLabel: 'Engine',
-      engineValue: 'OpenTofu',
+    secondary: 'Ver no GitHub',
+    points: {
+      license: 'Open source, AGPL-3.0',
+      hosting: 'Roda na sua infraestrutura',
+      engine: 'Movido a OpenTofu',
     },
+    alpha: 'Alpha: a plataforma está em validação, as funcionalidades chegam aos poucos e as APIs ainda podem mudar.',
     terminalLabel: 'Sessão de terminal: ork scan, ork template push e ork deploy --wait',
     terminalNote: 'Saída resumida. Hoje você compila o CLI ork a partir do código; ainda não há binários assinados.',
   },
   how: {
     label: 'Como funciona',
-    title: 'Template, plano, deploy e observação. Cada etapa deixa um artefato que você consegue ler.',
-    intro: 'Nada chega à nuvem antes de alguém revisar o plano. O worker aplica exatamente o plano que você aprovou, recurso por recurso.',
+    title: 'Do template ao ambiente rodando.',
+    intro: 'Nada chega à nuvem antes de alguém revisar o plano, e o worker aplica exatamente o plano que foi aprovado.',
     steps: {
-      template: {
-        title: 'Template',
-        text: 'Um arquivo YAML descreve a intenção sem citar provedor: uma API com duas réplicas, um Postgres replicado entre zonas, um storage versionado. Os placement slots dizem quais nuvens cada parte pode usar. Você escreve uma vez e faz deploy quantas vezes quiser.',
-        artifactLabel: 'Trecho de template',
+      describe: {
+        title: 'Descrever',
+        text: 'Um template YAML diz do que o ambiente precisa: serviços, Postgres, cache, fila, storage, ingress e DNS. Sem nome de provedor.',
       },
       plan: {
-        title: 'Plano',
-        text: 'O compilador resolve cada recurso para um serviço concreto da nuvem, define nome e tags, ordena o grafo de dependências e escolhe uma estratégia de conectividade para cada ligação. O plano sai agrupado por provedor, target e região.',
-        artifactLabel: 'Plano de deploy em texto',
+        title: 'Planejar',
+        text: 'Cada recurso vira um serviço concreto da nuvem. O plano mostra o resultado das políticas e um custo mensal aproximado antes de qualquer coisa existir.',
       },
       deploy: {
-        title: 'Deploy',
-        text: 'O OpenTofu executa o grafo de dependências de forma assíncrona, com um state separado para cada recurso. Ramos independentes rodam em paralelo e falhas transitórias são repetidas. Quando um recurso falha, só os recursos que dependem dele ficam de fora. Antes de alterar recursos que já existem, o worker roda um `tofu plan` de verdade, e um delete ou replace em produção espera aprovação.',
-        artifactLabel: 'Eventos do deploy',
+        title: 'Fazer o deploy',
+        text: 'O OpenTofu aplica o plano aprovado como um grafo de dependências, em paralelo quando possível e com retentativas. Mudanças de risco em produção esperam aprovação.',
       },
-      observe: {
-        title: 'Observação',
-        text: 'Os health checks são consolidados na instância e em uma página de status. Quando um componente crítico falha, o OrkStage abre um incidente, avisa os responsáveis no console e por email e resolve o incidente quando o componente volta a ficar saudável.',
+      operate: {
+        title: 'Operar',
+        text: 'Health checks, incidentes, páginas de status e detecção de drift continuam acompanhando cada instância depois do deploy.',
       },
     },
+    templateLabel: 'Trecho de template',
+    planLabel: 'Plano de deploy em texto',
   },
   placement: {
-    label: 'Placement multicloud',
+    label: 'Multicloud',
     title: 'Coloque cada recurso onde ele faz mais sentido.',
     intro:
-      'O placement é definido por recurso, e não por ambiente. Associe o slot `data` a uma subscription do Azure e o mesmo template vira multicloud. Associe todos os slots a uma conta AWS e ele volta a rodar em uma nuvem só. O template não muda.',
+      'O placement é definido por recurso, e não por ambiente. Coloque o banco no Azure e o resto na AWS, ou mantenha tudo em uma conta só. O template não muda.',
     topologyTitle: 'Topologia de uma instância distribuída entre AWS, Azure e OCI',
     topologyDescription:
       'O slot primary, na AWS, contém dns, ingress, api, worker, registry e network. O slot data, no Azure, contém o banco PostgreSQL. O slot storage, na OCI, contém o object storage. A api e o worker acessam o banco por TLS com allowlist de origem; a api acessa o storage por TLS.',
-    linksTitle: 'Como dois recursos se conectam',
-    linksIntro: 'O compilador escolhe a estratégia e mostra no plano. Nada é provisionado sem você ver.',
-    strategies: {
-      privateNetwork: 'Mesma conta e mesma região.',
-      privatePeering: 'Mesmo provedor, conta ou região diferente. Há custo de peering.',
-      publicTls: 'Entre nuvens, no modo `private-preferred`: TLS em um endpoint público, com a origem liberada em allowlist.',
-      unsatisfiable: 'Entre nuvens, no modo `private-required`. O plano falha até você mudar o modo ou o placement.',
-    },
-    status:
-      'O provisionamento na AWS é real (OpenTofu, validado com MiniStack). Os adapters de Azure, Google Cloud, OCI e outros provedores estão em preview, atrás de feature flags, até serem validados em contas reais. Um simulador determinístico permite testar qualquer topologia sem conta, sempre sinalizado como simulado.',
+    providersTitle: 'Provedores',
+    availableLabel: 'Disponível',
+    available: 'AWS, com provisionamento real via OpenTofu, e um simulador para testar qualquer topologia sem conta.',
+    previewLabel: 'Preview',
+    preview: 'Azure, Google Cloud, OCI, DigitalOcean, Vultr, CoreWeave, Magalu Cloud, Vercel, Render e Supabase, atrás de feature flags até serem validados em contas reais.',
+    connectivity: 'Quando dois recursos ficam em nuvens diferentes, o plano mostra como eles se conectam: rede privada, peering ou TLS com allowlist.',
   },
-  trust: {
-    label: 'Governança',
-    title: 'Planos que você confere antes de qualquer recurso existir.',
-    intro: 'Políticas, custo e aprovações fazem parte do plano, e não de uma reunião depois do fato. Templates customizados passam pelas mesmas verificações e não podem pular nenhuma.',
-    policiesTitle: 'Políticas, com todos os resultados à vista',
-    policiesNote: 'Também entram na verificação: templates marcados como fora de produção, limite de réplicas e orçamento mensal.',
-    costTitle: 'Estimativa de custo',
-    costNote: 'Preços de lista de um catálogo estático, sob demanda, por mês. É uma estimativa, nunca uma fatura.',
-    costCaption: 'Custo mensal aproximado por recurso na instância multicloud de referência',
-    costResource: 'recurso',
-    costPlacedOn: 'onde roda',
-    costPerMonth: 'USD/mês',
-    costTotal: 'total aproximado',
-    approvalsTitle: 'Aprovação onde ela importa',
-    approvalsText:
-      'Mudanças em produção que apagam, substituem ou mexem em um banco de dados param em `AWAITING_APPROVAL`. O worker também lê o plano real do provedor, então uma substituição que o diff da plataforma não enxerga também pede aprovação. O resto segue, e o registro explica por que a aprovação não foi necessária.',
-    auditTitle: 'Um audit log que ninguém edita',
-    auditText:
-      'Cada mudança vira um evento de auditoria com autor, correlation id e diff. Ações feitas com uma API key identificam a chave. Um trigger no Postgres rejeita updates e deletes na tabela, então o histórico fica exatamente como aconteceu.',
-  },
-  operate: {
-    label: 'Operação',
-    title: 'Feito para quem fica de plantão.',
-    intro: 'Do health check que falha até o email na caixa de entrada do responsável, cada elo da cadeia é automático e visível.',
-    health: {
-      title: 'Saúde',
-      text: 'A cada ciclo, o estado real é lido de novo no provedor e a saúde dos componentes se consolida na instância. Um componente crítico derruba a instância; os outros só a degradam.',
+  features: {
+    label: 'Pronto para produção',
+    title: 'Governança e operação vêm com cada instância.',
+    items: {
+      policies: {
+        title: 'Políticas em todo plano',
+        text: 'Banco público, storage aberto, backup ausente, região não aprovada e orçamento são verificados antes de qualquer recurso existir, e todos os resultados aparecem.',
+      },
+      cost: {
+        title: 'Custo antes do deploy',
+        text: 'Todo plano traz um custo mensal aproximado por recurso, com base em preços de lista. Uma estimativa, nunca uma fatura.',
+      },
+      approvals: {
+        title: 'Aprovação e auditoria',
+        text: 'Deletes, substituições e mudanças em banco de dados em produção esperam aprovação. Cada mudança vai para um audit log que ninguém edita.',
+      },
+      operations: {
+        title: 'Saúde, incidentes e páginas de status',
+        text: 'Regras de alerta sobre saúde e métricas abrem e resolvem incidentes. Os responsáveis ficam sabendo pelo console, por email ou por webhook.',
+      },
+      drift: {
+        title: 'Detecção de drift',
+        text: 'Recursos alterados ou apagados fora do OrkStage são detectados, e o próximo deploy os deixa de volta como o template define.',
+      },
+      automation: {
+        title: 'Importação e automação',
+        text: 'O scan engine transforma Terraform, CloudFormation, Kubernetes ou Compose em um template. API keys com escopo, webhooks assinados e o CLI ork se encaixam no seu CI.',
+      },
     },
-    incidents: {
-      title: 'Incidentes',
-      text: 'As regras de alerta são configuráveis, por health check ou por métrica. Elas abrem um incidente por recurso, com deduplicação e cooldown, e o resolvem quando o problema passa.',
-    },
-    statusPage: {
-      title: 'Página de status',
-      text: 'Cada tenant tem uma página de status (privada, para membros ou pública) que traduz os recursos nos componentes que seus clientes enxergam: API, workers, banco de dados.',
-    },
-    notifications: {
-      title: 'Notificações',
-      text: 'Owners e admins do tenant e a equipe da plataforma recebem avisos no console e por email. Webhooks assinados levam os mesmos eventos para os seus sistemas.',
-      meta: 'console · email · webhooks',
-    },
-    drift:
-      'Se alguém apagar um recurso direto no console do provedor, um probe ao vivo percebe que ele sumiu, a verificação falha na hora em vez de esperar, e o próximo deploy cria o recurso de novo.',
-  },
-  repo: {
-    label: 'Do seu repositório',
-    title: 'Comece pela infraestrutura que você já tem.',
-    intro:
-      'O scan engine lê Terraform e OpenTofu, CloudFormation e SAM, Kubernetes e Helm, Docker Compose, Dockerfiles e manifestos de pacotes. Ele propõe um template OrkStage e mostra a evidência de cada recurso. Importe o relatório pela API ou pelo console e revise o rascunho antes de publicar.',
-    sessionLabel: 'Sessão de terminal: ork import',
-    note: 'Seu código não sai da sua máquina: o CLI faz o scan localmente e envia só o relatório.',
-    importTitle: 'Importação de IaC',
-    importText:
-      '`POST /imports` recebe um ScanReport ou arquivos que o servidor analisa com o mesmo engine, compilado para WebAssembly. Recursos sem mapeamento e avisos aparecem na lista, nunca escondidos.',
-    integrationsTitle: 'API keys, webhooks, intake de CI',
-    integrationsText:
-      'Chaves com escopo que nunca passam do papel de quem as criou, webhooks assinados com HMAC e protegidos contra replay, e versões imutáveis de imagem publicadas pelo CI por digest.',
-    cliTitle: 'O CLI ork',
-    cliText:
-      '`init`, `scan`, `template validate`, `push` e `diff`, `import`, `deploy --wait`, `status`, `logs` e `destroy`. Saída em JSON e exit codes estáveis para CI. Compile a partir do código até os binários assinados saírem.',
   },
   editions: {
     label: 'Open core',
-    title: 'Open source no núcleo. Enterprise onde a organização precisa.',
-    intro:
-      'O Community é o control plane completo sob AGPL-3.0 e basta para rodar produção na AWS. O Enterprise adiciona recursos para organizações grandes e para compliance sob licença comercial, ativados por uma chave de licença que funciona offline. Mesmo código, mesmas imagens.',
-    caption: 'Comparação entre as edições Community e Enterprise',
-    area: 'Área',
-    community: 'Community',
-    communityNote: 'AGPL-3.0, gratuito',
-    enterprise: 'Enterprise',
-    enterpriseNote: 'comercial, chave de licença',
-    rows: {
-      controlPlane: {
-        area: 'Control plane',
-        community: 'Templates, builder visual, placement, planos e políticas, estimativa de custo, deploys, saúde, incidentes, status pages, notificações',
-        enterprisePlanned: 'Pacotes de políticas e criação de políticas próprias',
-      },
-      provisioning: {
-        area: 'Provisionamento',
-        community: 'AWS via OpenTofu, demais provedores em preview, simulador, grafo de dependências, retentativas, detecção de drift',
-        enterprisePlanned: 'Provisionamento de conectividade privada (VPN, interconnect)',
-      },
-      identity: {
-        area: 'Identidade',
-        community: 'Dev login, OIDC (Microsoft Entra; Google e GitLab por configuração)',
-        enterprisePlanned: 'SSO com SAML 2.0 e provisionamento SCIM',
-      },
-      governance: {
-        area: 'Governança',
-        community: 'Sete papéis nativos, aprovação para mudanças de alto risco em produção, audit log que só aceita inserções',
-        enterpriseAvailable: 'Exportação do audit log (NDJSON, CSV)',
-        enterprisePlanned: 'Papéis customizados, aprovações em várias etapas, políticas de retenção',
-      },
-      organizations: {
-        area: 'Organizações',
-        community: 'Uma organização, vários tenants',
-        enterprisePlanned: 'Várias organizações, status pages com a sua marca',
-      },
-      integrations: {
-        area: 'Integrações',
-        community: 'API keys, webhooks, intake de CI, importação de IaC, CLI ork (preview)',
-        enterprisePlanned: 'Gestão de mudanças com ServiceNow ou Jira, alertas no PagerDuty ou Opsgenie',
-      },
-      support: {
-        area: 'Suporte',
-        community: 'GitHub Discussions e Slack',
-        enterprisePlanned: 'Suporte prioritário com SLA',
-      },
+    title: 'Open source no núcleo. Enterprise quando você precisar.',
+    intro: 'Um só código e as mesmas imagens. Os recursos Enterprise são ativados por uma chave de licença que funciona offline.',
+    community: {
+      name: 'Community',
+      price: 'Gratuito, AGPL-3.0',
+      summary: 'O control plane completo, suficiente para rodar produção na AWS.',
+      items: [
+        'Templates, placement, planos, políticas e custo',
+        'Deploys, saúde, incidentes e páginas de status',
+        'Login OIDC, sete papéis nativos, audit log',
+        'API keys, webhooks, importação de IaC e o CLI ork',
+      ],
+      cta: 'Começar',
+    },
+    enterprise: {
+      name: 'Enterprise',
+      price: 'Licença comercial',
+      summary: 'Para organizações com exigências de compliance, identidade e suporte.',
+      available: ['Exportação do audit log (NDJSON, CSV)'],
+      planned: ['SSO com SAML e provisionamento SCIM', 'Papéis customizados e aprovações em várias etapas', 'Várias organizações e páginas de status com a sua marca', 'Suporte prioritário com SLA'],
+      cta: 'Fale com a gente',
     },
     compare: 'Ver a comparação completa entre as edições',
-    contact: 'Fale com a gente sobre o Enterprise',
   },
-  selfHost: {
-    label: 'Na sua infraestrutura',
-    title: 'A plataforma inteira com um comando do Compose.',
-    intro: 'Você só precisa de Docker. O arquivo do Compose sobe a API, o worker, o console, Postgres, Redis, Mailpit, a imagem do runner OpenTofu e o MiniStack para simular a AWS localmente.',
+  start: {
+    label: 'Começar',
+    title: 'Teste a plataforma inteira na sua máquina.',
+    intro: 'Você só precisa de Docker. Um comando do Compose sobe a API, o worker, o console, Postgres, Redis e um emulador local da AWS.',
     windowMeta: 'avaliação local',
     commandLabel: 'Comando do Docker Compose',
-    note: 'Esta stack roda em modo de desenvolvimento, com o dev login e o socket do Docker montado. Ela serve para avaliar o OrkStage na sua máquina, não para produção.',
+    note: 'Modo de desenvolvimento, com o dev login e o socket do Docker montado. Serve para avaliar o OrkStage, não para produção.',
     cta: 'Ler o quickstart',
+    roadmapTitle: 'Próximo no roadmap',
+    roadmapText: 'Mini agentes de IA vinculados aos templates (segurança, FinOps, insights) que analisam planos e deploys apenas em modo leitura, usando a sua própria API key da Anthropic, OpenAI ou Gemini.',
+    roadmapLink: 'Ver o roadmap',
   },
   footer: {
-    tagline: 'Orquestre todas as nuvens de um só palco.',
+    tagline: 'Orquestre todas as suas nuvens em um só lugar.',
     product: 'Produto',
     documentation: 'Documentação',
     quickstart: 'Quickstart',
     apiReference: 'Referência da API',
+    roadmap: 'Roadmap',
     project: 'Projeto',
     license: 'Licença (AGPL-3.0)',
     discussions: 'Discussions',

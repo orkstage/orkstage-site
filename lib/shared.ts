@@ -13,6 +13,7 @@ export const links = {
   contact: 'mailto:hello@orkstage.io',
   securityContact: 'mailto:security@orkstage.io',
   quickstart: '/docs/get-started/quickstart/',
+  roadmap: '/docs/get-started/roadmap/',
   docs: '/docs/',
   apiReference: '/docs/developer/api-reference/',
   editions: '/docs/enterprise/editions/',
