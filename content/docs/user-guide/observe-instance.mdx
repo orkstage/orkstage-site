@@ -21,7 +21,8 @@ and region, knowledge state (`DESIRED`, `KNOWN`, `ACTUAL` or `UNKNOWN`), drift a
 ## Drift
 
 On real providers, the worker runs a scheduled **drift scan**. It runs every
-`DRIFT_CHECK_INTERVAL_MINUTES` minutes (default 360), and `0` turns it off. The scan plans each
+`DRIFT_CHECK_INTERVAL_MINUTES` minutes (default 360), and `0` turns it off; the `DRIFT_DETECTION`
+feature flag turns it off for one tenant. The scan plans each
 applied resource again with OpenTofu, from the snapshot it was deployed with. If that plan contains
 any change, something changed outside OrkStage.
 
