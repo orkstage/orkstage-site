@@ -117,6 +117,10 @@ Subnets span every zone of a region, so `availabilityZones` does not change the 
 
 ## Known limits
 
+- Backups: the worker reads a Cloud SQL instance's backup configuration, its last
+  successful and failed backup runs and the next backup window (`roles/cloudsql.admin` covers it).
+  The restore window is not shown: Cloud SQL does not expose its start. Not yet verified on a live
+  account.
 - Cloud Run CPU is rounded up to 1, 2, 4, 6 or 8 vCPU, and memory is raised to the minimum for
   that CPU. Fractional CPU would force one request per instance.
 - Cloud Run scales on request concurrency. `targetCpuPercent` is not used.

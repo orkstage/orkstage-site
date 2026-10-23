@@ -1,0 +1,80 @@
+---
+title: Disaster recovery
+description: Recovery objectives, backup frequency and recovery steps for the OrkStage control plane and for the customer environments it manages.
+---
+
+Two things can need recovering: the **control plane** you host (API, worker, console and their
+stores) and the **customer environments** OrkStage deploys into cloud accounts. They fail
+independently. Losing the control plane never deletes cloud resources, and losing a customer
+database never touches the control plane.
+
+## Recovery objectives
+
+The recovery point objective (RPO) is how much recent data you can lose; the recovery time
+objective (RTO) is how long recovery takes. OrkStage does not set them for you: they follow from
+how you back up each store. The table shows what the usual setups give.
+
+| What | Backup | RPO | RTO |
+|---|---|---|---|
+| Control plane Postgres on a managed service | Automated backups with point in time recovery | Minutes (the service's restore window) | Restore time of the database, then a restart of the API and worker |
+| Control plane Postgres with `pg_dump` | A scheduled dump | Up to the dump interval (a day for a nightly dump) | Restore time of the dump, then a restart |
+| Redis | None needed | Not applicable: queues rebuild from Postgres | A restart |
+| OpenTofu state (S3, per customer account) | Bucket versioning | Zero: every write is a new version | Restore the previous version of a state file |
+| Customer database on AWS (RDS) | Automated daily backup and continuous transaction logs, kept `backup.retentionDays` (up to 35) | About five minutes (the latest restorable time) | Restore time of a new RDS instance, usually tens of minutes, longer for large databases |
+
+Write your own objectives down, then test them: restore a backup into a scratch environment on a
+schedule and time it.
+
+## Backup frequency
+
+- **Control plane:** your choice. Point in time recovery on a managed Postgres is the simplest way
+  to keep the RPO in minutes. See [Backups and recovery](/docs/self-hosting/backups/).
+- **Customer databases:** the template sets it. `backup.enabled` and `backup.retentionDays` become
+  the RDS automated backup settings: one backup a day in the backup window plus transaction logs
+  for point in time restore. The `production-backups` policy refuses a production database without
+  backups, and a tenant's `maxBackupRetentionDays` limit caps the retention.
+
+## What OrkStage watches
+
+On every health tick the worker reads each database's backups from its provider (AWS RDS and the
+simulator today) and keeps them on the resource: last and next backup, retention and the restore
+window. The instance page shows them on the database card.
+
+When the last backup failed, or there was none in the last 26 hours, the resource shows the
+problem and the tenant gets a `backup.failed` notification (console, email and webhooks), once a
+day while it lasts.
+
+## Recovering a customer environment
+
+### A database lost data or was damaged
+
+Run the database's `restore` trigger action (see [Triggers](/docs/user-guide/triggers/)). On AWS it
+restores the database to a point in time, or to the latest restorable time, as a **new** RDS
+instance next to the original, with the same subnet group and security groups. OrkStage does not
+manage the copy: check it, point the application at it, then delete what you no longer need.
+
+### Resources were deleted outside OrkStage
+
+The next health tick finds them missing and the instance turns unhealthy. Deploy the instance
+again: OrkStage recreates what the template describes. Data inside a recreated database comes
+from a restore, not from the deploy.
+
+### A whole region or account is unavailable
+
+OrkStage does not copy backups across regions or accounts yet. Create an instance from the same
+template on a profile in another region, restore the data from a copy you keep there, and move
+traffic with DNS. Plan and test this before you need it.
+
+## Destroying production
+
+A destroy of a `production` instance is refused with `BACKUP_NOT_RECENT` while one of its
+databases has no backup from the last day. Run a backup, wait for the next one, or confirm the
+destroy without a recent backup (the console offers a checkbox; the API takes
+`withoutRecentBackup: true`). Where the provider supports it, a final snapshot is still taken.
+
+## Recovering the control plane
+
+Follow [Backups and recovery](/docs/self-hosting/backups/): restore Postgres, start the API and
+the worker with the same `ENCRYPTION_KEY` and `SESSION_SECRET`, and let the health monitor and the
+drift scan read the actual state of every resource again. Deployments that were running resume
+from their saved steps.
