@@ -100,7 +100,7 @@ devices out under **Your sessions** in the account menu.
 | `HEALTH_CHECK_INTERVAL_SECONDS` | integer, at least 10 | `30` | Interval between health monitor ticks. |
 | `DRIFT_CHECK_INTERVAL_MINUTES` | integer, at least 0 | `360` | Interval between drift scans on real providers (one OpenTofu plan per applied resource). `0` turns scans off. |
 | `DNS_RESOLVERS` | comma separated addresses | system resolver | DNS servers the worker asks when it verifies [custom domains](/docs/user-guide/custom-domains), for example `1.1.1.1,8.8.8.8`. Set it when the system resolver is private and could hide the records customers create. |
-| `TOFU_IMAGE` | string | `ghcr.io/opentofu/opentofu:1.12.9` | Image for runner containers. |
+| `TOFU_IMAGE` | string | `ghcr.io/opentofu/opentofu:1.13.2` | Image for runner containers. |
 | `TOFU_MODULES_DIR` | path | | Module library on the worker host, mounted read only into runners. |
 | `TOFU_MODULES_IN_IMAGE` | boolean | `false` | The modules are baked into `TOFU_IMAGE`, so nothing is mounted. |
 | `TOFU_WORK_DIR` | path | | Where the worker writes the working directory of each resource. |
