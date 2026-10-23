@@ -63,6 +63,7 @@ repository once in each account you connect.
 |---|---|
 | `ControlPlanePrincipalArn` | ARN of the identity the OrkStage worker runs as, for example `arn:aws:iam::111122223333:role/orkstage-worker`. |
 | `ExternalId` | A random shared secret of at least 16 characters (`openssl rand -hex 24`). Marked `NoEcho`. |
+| `StateBucketName` | Optional. A custom state bucket (the target's `stateBucket`) whose name does not start with `orkstage-tfstate-<account>-`. Empty: only default names are allowed. |
 | `RoleName` | Defaults to `orkstage-deploy`. |
 | `MaxSessionDuration` | Defaults to `3600` seconds. Raise it with `AWS_ROLE_SESSION_MINUTES` when OpenTofu runs may take longer than 55 minutes. |
 
@@ -88,7 +89,8 @@ In short, the role may:
 - manage ECR repositories, SQS queues, Secrets Manager secrets, S3 buckets and IAM service roles
   whose names start with `ork-` (every physical name OrkStage creates does), plus log groups under
   `/orkstage/`;
-- read and write the OpenTofu state bucket `orkstage-tfstate-<account>-*`;
+- read and write the OpenTofu state bucket `orkstage-tfstate-<account>-*`, and the bucket named in
+  `StateBucketName` when you set it;
 - pass `ork-*` roles to ECS tasks and EC2 only;
 - call `iam:SimulatePrincipalPolicy` **on itself**, so OrkStage can check permissions before it
   deploys.
@@ -119,14 +121,20 @@ See [Secret references](/docs/self-hosting/secrets/).
 OpenTofu state lives in S3, with one state file per resource (`orkstage/<physical-name>.tfstate`). In
 a real account, the bucket must exist before the first deployment and must have:
 
-- the default name `orkstage-tfstate-<accountId>-<region>`, or the name you set in `stateBucket` on
-  the target;
+- the default name `orkstage-tfstate-<accountId>-<region>`, one bucket per region, or the name you
+  set in `stateBucket` on the target;
 - **versioning enabled**, so you can recover from a damaged state;
 - **default encryption** enabled;
 - public access blocked.
 
 Locking uses the lock file that OpenTofu keeps in S3 (`use_lockfile`), so you do not need a DynamoDB
 table.
+
+One custom bucket can serve every region of the target. Set `stateRegion` to the bucket's region
+(it defaults to the target's default region); new states then go to
+`orkstage/<region>/<physical-name>.tfstate`, and states written before keep their key. If the bucket
+name does not start with `orkstage-tfstate-<accountId>-`, pass it as `StateBucketName` to the role
+stack so the role may use it.
 
 ```bash
 B=orkstage-tfstate-123456789012-us-east-1
@@ -172,6 +180,7 @@ Content-Type: application/json
 | `accountId` | The 12 digit account id (the `AccountId` output). |
 | `roleArn` | The `RoleArn` output. |
 | `stateBucket` | Optional. Defaults to `orkstage-tfstate-<accountId>-<region>`. |
+| `stateRegion` | Optional, with `stateBucket`: the bucket's region, so one bucket serves every region. Defaults to the target's default region. |
 | `dnsZone` | Platform DNS zone for instance subdomains. It must already exist in Route 53. |
 | `ecsAmiId` | Optional AMI for `ecs-ec2` capacity. When empty, OrkStage uses the latest ECS optimized AMI published in SSM. |
 
