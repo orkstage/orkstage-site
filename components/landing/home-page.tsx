@@ -178,7 +178,7 @@ export function HomePage({ locale }: { locale: Locale }) {
           <div className="grid gap-8 lg:grid-cols-12">
             <div className="min-w-0 lg:col-span-7">
               <Window title="shell" meta={m.start.windowMeta}>
-                <pre className="overflow-x-auto px-4 py-4 font-mono text-[12.5px] leading-[1.7] text-ink" aria-label={m.start.commandLabel}>
+                <pre className="overflow-x-auto px-4 py-4 font-mono text-[12.5px] leading-[1.7] text-ink" role="figure" aria-label={m.start.commandLabel}>
                   <span className="block">
                     <span className="select-none text-mint">$ </span>git clone https://github.com/orkstage/orkstage &amp;&amp; cd orkstage
                   </span>

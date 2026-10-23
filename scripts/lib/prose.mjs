@@ -166,7 +166,7 @@ export function mdxToProse(source) {
     const raw = lines[i];
     const fenceMatch = raw.match(/^\s*(```+|~~~+)/);
     if (fence) {
-      if (fenceMatch && fenceMatch[1].startsWith(fence[0]) && fenceMatch[1].length >= fence.length) fence = null;
+      if (fenceMatch?.[1].startsWith(fence[0]) && fenceMatch[1].length >= fence.length) fence = null;
       continue;
     }
     if (fenceMatch) {

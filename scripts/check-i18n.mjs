@@ -20,7 +20,9 @@ const failures = [];
 
 function flatten(value, prefix = '', out = new Map()) {
   if (typeof value === 'string') out.set(prefix, value);
-  else if (Array.isArray(value)) value.forEach((v, i) => flatten(v, `${prefix}[${i}]`, out));
+  else if (Array.isArray(value)) value.forEach((v, i) => {
+    flatten(v, `${prefix}[${i}]`, out);
+  });
   else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) flatten(v, prefix ? `${prefix}.${k}` : k, out);
   else out.set(prefix, value);
   return out;

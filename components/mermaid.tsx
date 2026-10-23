@@ -35,5 +35,6 @@ function MermaidContent({ chart }: { chart: string }) {
   // Wider labels than the default 200px, so steps read on one line and diagrams stay short.
   mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', fontFamily: 'inherit', theme, flowchart: { wrappingWidth: 320 } });
   const { svg } = use(cached(`${theme}:${chart}`, () => mermaid.render(`mermaid${id}`, chart.replaceAll('\\n', '\n'))));
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: SVG rendered by Mermaid with securityLevel strict, from diagrams in the docs.
   return <div className="not-prose my-6 flex justify-center overflow-x-auto [&_svg]:max-w-full" dangerouslySetInnerHTML={{ __html: svg }} />;
 }
