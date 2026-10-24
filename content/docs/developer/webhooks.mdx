@@ -14,6 +14,7 @@ them to post to chat, open tickets, start pipelines or feed your incident tools.
 | `deployment.succeeded` | A deployment (apply or destroy) finished. |
 | `deployment.failed` | A deployment ended in failure. |
 | `deployment.awaiting_approval` | A high risk production deployment waits for approval. |
+| `deployment.bake_failed` | A release failed while watched (an incident or a failing service); `data.rolledBack` says whether a rollback started, and `data.rollbackDeploymentId` which. |
 | `instance.degraded` | An instance's health dropped. |
 | `instance.drift_detected` | The drift scan found changes made outside OrkStage. |
 | `incident.opened`, `incident.updated`, `incident.resolved` | An incident was opened, updated or resolved. |
@@ -23,6 +24,7 @@ them to post to chat, open tickets, start pipelines or feed your incident tools.
 | `domain.verified`, `domain.verification_failed` | A custom domain's TXT record was found, or did not appear within 7 days. |
 | `domain.certificate_issued`, `domain.certificate_expiring` | A custom domain's certificate was issued, or expires in 30, 14, 7 or 1 days. |
 | `quota.exceeded` | Someone tried to create an instance beyond the tenant's instance limit. |
+| `backup.failed` | A database's last backup failed, or none ran in the last 26 hours (once a day while it lasts). |
 | `ping` | Sent by the **Test** button in the console and by `POST /webhooks/:id/test`. You cannot subscribe to it. |
 
 ## Creating an endpoint

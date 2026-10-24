@@ -287,7 +287,7 @@ every provider. A provider's own action name works too. The console and
 | `overridable` | string[] | `[]` | Parameters a caller may change at run time. Anything else is rejected. |
 | `on.manual` | boolean | `true` | Run from the console or the CLI. |
 | `on.webhook` | boolean | `false` | Run with an API key holding `instances:deploy`, for example from CI or a CMS. |
-| `on.schedule` | cron | | Five field cron expression in UTC, for example `0 3 * * *`. |
+| `on.schedule` | cron | | Five field cron expression in UTC, for example `0 3 * * *`. Not for the `release` actions, which only run by hand or from CI. |
 
 ```yaml
 triggers:
@@ -309,6 +309,25 @@ triggers:
 ```
 
 See [triggers](/docs/user-guide/triggers/) for running them and following their runs.
+
+## Release
+
+How deployments of the template reach traffic and how long they are watched. Each deploy can
+change these; see [releases and rollback](/docs/user-guide/deploy/#releases-bake-periods-and-rollback).
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `strategy` | `rolling`, `canary`, `blueGreen` | `rolling` | A strategy other than `rolling` needs a provider that offers it for every container service. |
+| `trafficPercent` | 1 to 50 | `10` | Share of traffic a canary gets during the bake period. |
+| `bakeMinutes` | 0 to 240 | `0` | Minutes the instance is watched after a deployment; a canary or blue/green release without one gets 15. |
+| `autoRollback` | boolean | `true` | Roll back to the last verified deployment when the release fails while watched. |
+
+```yaml
+release:
+  strategy: canary
+  trafficPercent: 20
+  bakeMinutes: 30
+```
 
 ## Observability
 

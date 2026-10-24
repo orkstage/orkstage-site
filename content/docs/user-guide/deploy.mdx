@@ -108,6 +108,44 @@ the provider whether each resource still exists. A missing resource fails verifi
 with the message `Resource no longer exists at the provider. Redeploy to re-create it.`, instead of
 waiting for it to settle. The next deployment creates it again.
 
+## Releases, bake periods and rollback
+
+How a deployment reaches traffic and how long OrkStage watches it come from the template's
+[`release` section](/docs/developer/template-reference/#release), and each deploy can change them:
+**Release options** in the deploy dialog, `ork deploy --strategy canary --traffic 20 --bake 15`, or
+`release` in the body of `POST /instances/{id}/deploy`.
+
+| Strategy | How the new release reaches traffic |
+|---|---|
+| Rolling update (default) | The provider replaces instances of the old release as new ones turn healthy. |
+| Canary | The new release gets a share of traffic (`trafficPercent`, 10% by default) beside the old one during the bake period, then all of it. |
+| Blue/green | The new release comes up beside the old one and takes all traffic once healthy; the old one is kept during the bake period. |
+
+**Bake period.** For `bakeMinutes` after a deployment succeeds, the worker watches the instance.
+An automated incident on it, or a critical service failing three health checks in a row, fails the
+release. When it stays healthy, the deployment is marked **verified** and a canary or blue/green
+release is promoted (all traffic to it, the old release removed). A deployment without a bake
+period is verified when it finishes healthy. The deployment page shows the strategy, until when it
+is watched and the verdict.
+
+**Automatic rollback.** A release that fails while watched, or fails its health checks during the
+verify phase, is rolled back to the last **verified** deployment unless `autoRollback` is off. The
+rollback is a deployment of that earlier configuration (its template version, image digests and
+variables), sent as `deployment.bake_failed` to notifications and webhooks. A bad canary therefore
+never keeps its share of traffic.
+
+**Roll back by hand.** Admins use **Roll back** on the instance page (the last verified deployment
+by default, or one they choose), `ork rollback [--to DEPLOYMENT]`, the `release.rollback` trigger
+action, or `POST /instances/{id}/rollback`. Database migrations are not undone, and production plans
+that delete or replace resources wait for approval like any deployment.
+
+<Callout type="info" title="Where canary and blue/green are available">
+  The simulator offers both, so templates and pipelines can use them today. On AWS they arrive
+  with the ECS deployment controller strategies after the first run on real accounts; until then
+  a deploy that asks for them on AWS is refused with `RELEASE_STRATEGY_UNSUPPORTED`. Bake periods
+  and rollback work on every provider.
+</Callout>
+
 ## Upgrading the template
 
 **Change template version** shows the plan from what runs now to the chosen version (what is
