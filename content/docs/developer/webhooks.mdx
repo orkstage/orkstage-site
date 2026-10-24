@@ -77,6 +77,7 @@ OrkStage-Signature: t=1791234567,v1=5f2b…c9
   "type": "deployment.failed",
   "createdAt": "2026-10-05T14:21:07.000Z",
   "tenantId": "8a1c…",
+  "correlationId": "3d0e…",
   "data": {
     "title": "Deployment failed",
     "body": "The deployment did not complete (AUTHORIZATION_ERROR). Open the deployment for details and safe retry options.",
@@ -87,6 +88,10 @@ OrkStage-Signature: t=1791234567,v1=5f2b…c9
   }
 }
 ```
+
+`correlationId` is the id of the operation that caused the event (the deployment or trigger run,
+and the request that started it), or `null` for events the platform raises on its own, such as
+health incidents. Search the platform logs for it.
 
 `OrkStage-Delivery` is unique per delivery and stays the same across retries. A manual redelivery is
 a new delivery with a new `OrkStage-Delivery` value, but its body keeps the original `id`. To drop

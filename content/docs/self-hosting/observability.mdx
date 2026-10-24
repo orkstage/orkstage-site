@@ -5,7 +5,8 @@ description: Follow an OrkStage installation through JSON logs with correlation 
 
 ## Logs
 
-The API and the worker write structured JSON logs (Pino) to stdout. Each line carries `service` and
+The API and the worker write structured JSON logs (Pino) to stdout. Each line carries `service`
+(`orkstage-api` or `orkstage-worker`, the same names traces and metrics use) and
 `context` fields and the **correlation id** of the request. Tokens, secrets, cookies and
 authorization headers are redacted. `LOG_LEVEL` sets the level (`info` by default).
 
@@ -14,8 +15,9 @@ docker compose --profile platform logs -f api worker
 ```
 
 The correlation id starts at the HTTP request (`x-correlation-id`) and travels into the deployment,
-the OpenTofu runs, the provider calls and the audit events. Search your log store for it to follow
-one operation end to end. Work the worker starts on its own (health checks, drift scans, scheduled
+the OpenTofu runs, the provider calls, the audit events, and the notifications and webhook
+deliveries it causes (`correlationId` in the payload). Search your log store for it to follow one
+operation end to end. Work the worker starts on its own (health checks, drift scans, scheduled
 triggers, backups) gets its own id.
 
 ## Health endpoints
