@@ -1,6 +1,6 @@
 ---
 title: Observability
-description: Follow an OrkStage installation through JSON logs with correlation ids, health endpoints, deployment events and the audit log. Metrics and tracing are planned.
+description: Follow an OrkStage installation through JSON logs with correlation ids, health endpoints, OpenTelemetry traces and metrics, deployment events and the audit log.
 ---
 
 ## Logs
@@ -14,8 +14,9 @@ docker compose --profile platform logs -f api worker
 ```
 
 The correlation id starts at the HTTP request (`x-correlation-id`) and travels into the deployment,
-the OpenTofu runs, the audit events and the webhook deliveries. Search your log store for it to
-follow one operation end to end.
+the OpenTofu runs, the provider calls and the audit events. Search your log store for it to follow
+one operation end to end. Work the worker starts on its own (health checks, drift scans, scheduled
+triggers, backups) gets its own id.
 
 ## Health endpoints
 
