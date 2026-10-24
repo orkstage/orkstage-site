@@ -38,7 +38,9 @@ actions OrkStage's planned AI agents may propose (they never run one themselves)
 | `database.reboot` | database | disruptive | Reboots the server; connections drop for a short while. |
 | `database.snapshot` | database | safe | An on demand backup, kept until deleted. |
 | `database.restore` | database | safe | A point in time copy next to the original (`pointInTime`). |
-| `release.rollback` | service, frontend | disruptive | Returns to an earlier deployment (`deployment`). |
+| `release.rollback` | service, frontend | disruptive | Returns to an earlier deployment (`deployment`); by default the last verified one. |
+| `release.canary` | service | disruptive | Deploys the pending changes as a canary (`trafficPercent`, `bakeMinutes`), then promotes or rolls back. |
+| `release.blueGreen` | service | disruptive | Deploys the pending changes beside the running release and switches once healthy (`bakeMinutes`). |
 
 On AWS, ECS services offer `service.restart` and `service.scale`, and RDS databases offer
 `database.reboot`, `database.snapshot` and `database.restore`. Other providers map their own actions
@@ -46,9 +48,20 @@ onto the catalog: Render's `scale` with `numInstances` is `service.scale` with `
 Supabase `restart` is `database.reboot`. The trigger list shows the provider and the risk of each
 trigger.
 
+The three `release` actions are run by OrkStage itself as a [deployment](/docs/user-guide/deploy/#releases-bake-periods-and-rollback)
+of the instance; the run links to it. Providers with their own rollback (Render, Vercel) keep using
+it for `release.rollback`. A canary or blue/green release needs a provider that offers it, and none
+of the three can run on a schedule.
+
 **Who may run it.** A `safe` action needs the developer role, anything else (and any provider
 specific action) the admin role. A trigger's `role` field can ask for more, never for less. A run
 without the role is refused with `403 ACTION_ROLE_REQUIRED`.
+
+**Production approval.** On a production instance, a disruptive or destructive action does not run
+right away: the run waits as `AWAITING_APPROVAL`, scheduled runs too, and admins get a
+`trigger.awaiting_approval` notification. An admin approves it (**Approve** under recent runs,
+`ork triggers approve RUN` or `POST /instances/{id}/trigger-runs/{runId}/approve`) or cancels it.
+Safe actions run at once everywhere.
 
 ## Run from the console
 
@@ -108,5 +121,5 @@ simulator runs the same action for tests.
 
 Every run is stored with its source (`MANUAL`, `SCHEDULE`, `WEBHOOK`), parameters, status and
 result, and appears under **Recent runs** and in `GET /instances/{id}/trigger-runs`. Runs are
-audited, and their outcome is sent as the `trigger.succeeded` and `trigger.failed`
-[notification and webhook events](/docs/developer/webhooks/).
+audited, and their outcome is sent as the `trigger.succeeded`, `trigger.failed` and
+`trigger.awaiting_approval` notifications.
