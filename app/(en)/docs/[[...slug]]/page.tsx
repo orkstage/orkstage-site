@@ -25,10 +25,14 @@ function isGenerated(page: Page) {
   return Boolean(page.data._openapi);
 }
 
-/** Title and meta description; generated API pages get an API suffix so they stay unique and long enough. */
+/**
+ * Title and meta description; generated API pages get an API suffix so they stay unique and long
+ * enough, unless the path is so long that the full title (with " | OrkStage") would pass 70 characters.
+ */
 function seo(page: Page) {
   const generated = isGenerated(page);
-  const title = generated ? `${page.data.title} (API)` : page.data.title;
+  const suffixed = `${page.data.title} (API)`;
+  const title = generated && suffixed.length + ' | OrkStage'.length <= 70 ? suffixed : page.data.title;
   const description = metaDescription(page.data.description, generated ? `${page.data.title} in the OrkStage Control API v1 reference.` : 'OrkStage documentation.');
   return { title, description };
 }
