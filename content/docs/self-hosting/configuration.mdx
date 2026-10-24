@@ -100,14 +100,26 @@ devices out under **Your sessions** in the account menu.
 | `HEALTH_CHECK_INTERVAL_SECONDS` | integer, at least 10 | `30` | Interval between health monitor ticks. |
 | `DRIFT_CHECK_INTERVAL_MINUTES` | integer, at least 0 | `360` | Interval between drift scans on real providers (one OpenTofu plan per applied resource). `0` turns scans off. |
 | `DNS_RESOLVERS` | comma separated addresses | system resolver | DNS servers the worker asks when it verifies [custom domains](/docs/user-guide/custom-domains), for example `1.1.1.1,8.8.8.8`. Set it when the system resolver is private and could hide the records customers create. |
-| `TOFU_IMAGE` | string | `ghcr.io/opentofu/opentofu:1.13.2` | Image for runner containers. |
+| `TOFU_RUNNER` | `docker`, `ecs` or `kubernetes` | `docker` | Where OpenTofu runs: containers through the Docker socket, ECS tasks or Kubernetes Jobs. See [OpenTofu runner](/docs/self-hosting/opentofu#where-the-runner-runs). |
+| `TOFU_IMAGE` | string | `ghcr.io/opentofu/opentofu:1.13.2` | Image for runners (Docker and Kubernetes; on ECS the task definition names it). |
 | `TOFU_MODULES_DIR` | path | | Module library on the worker host, mounted read only into runners. |
 | `TOFU_MODULES_IN_IMAGE` | boolean | `false` | The modules are baked into `TOFU_IMAGE`, so nothing is mounted. |
 | `TOFU_WORK_DIR` | path | | Where the worker writes the working directory of each resource. |
 | `TOFU_WORK_VOLUME` | string | | For a worker that runs in a container: a named volume mounted at `TOFU_WORK_DIR` and passed on to runners. |
 | `TOFU_PLUGIN_CACHE_VOLUME` | string | `orkstage-tofu-plugins` | Named volume that runners share as the provider plugin cache. |
 | `TOFU_DOCKER_NETWORK` | string | | Docker network for runner containers, so they can reach an emulator by name. |
-| `TOFU_TIMEOUT_MINUTES` | integer from 1 to 240 | `45` | Hard time limit for one OpenTofu command. |
+| `TOFU_REMOTE_WORK_DIR` | path | `/workspace` | ECS and Kubernetes: where the runner mounts the work volume that the worker mounts at `TOFU_WORK_DIR`. |
+| `TOFU_ECS_CLUSTER`, `TOFU_ECS_TASK_DEFINITION` | string | | ECS: the cluster and the runner task definition. Required with `TOFU_RUNNER=ecs`. |
+| `TOFU_ECS_SUBNETS`, `TOFU_ECS_SECURITY_GROUPS` | comma separated ids | | ECS: the network of runner tasks. Subnets are required. |
+| `TOFU_ECS_CONTAINER` | string | `tofu` | ECS: the runner container's name in the task definition. |
+| `TOFU_ECS_ASSIGN_PUBLIC_IP` | boolean | `false` | ECS: give runner tasks a public address (public subnets without a NAT gateway). |
+| `TOFU_ECS_LAUNCH_TYPE` | `FARGATE` or `EC2` | `FARGATE` | ECS: launch type of runner tasks. |
+| `TOFU_ECS_REGION` | string | the SDK default | ECS: region of the cluster. |
+| `TOFU_K8S_WORK_CLAIM` | string | | Kubernetes: the ReadWriteMany claim of the work volume. Required with `TOFU_RUNNER=kubernetes`. |
+| `TOFU_K8S_NAMESPACE` | string | the worker's | Kubernetes: namespace of the runner Jobs. |
+| `TOFU_K8S_SERVICE_ACCOUNT` | string | the namespace default | Kubernetes: service account of runner pods (its token is never mounted). |
+| `TOFU_K8S_API_URL` | URL | in cluster | Kubernetes: the API server, when the worker runs outside the cluster. |
+| `TOFU_TIMEOUT_MINUTES` | integer from 1 to 240 | `45` | Hard time limit for one OpenTofu command on Docker, and for one whole operation on ECS and Kubernetes. |
 | `AWS_ROLE_SESSION_MINUTES` | integer from 15 to 720 | `60` | Length of the AWS sessions OrkStage requests when it assumes a deployment role. Each OpenTofu run gets credentials that outlive `TOFU_TIMEOUT_MINUTES`, so keep this above it; above 60, raise the role's `MaxSessionDuration` too. |
 | `AWS_EMULATOR_ENDPOINT` | URL | | Emulator endpoint as seen from inside containers, for example `http://ministack:4566`. |
 

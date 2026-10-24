@@ -1,6 +1,6 @@
 ---
 title: OpenTofu runner and state
-description: How OrkStage runs OpenTofu in throwaway containers, keeps one S3 state per resource without secrets, plans before apply and scans for drift.
+description: How OrkStage runs OpenTofu in throwaway runners on Docker, ECS or Kubernetes, keeps one S3 state per resource without secrets, plans before apply and scans for drift.
 ---
 
 OrkStage provisions AWS with OpenTofu modules in `infra/tofu/modules/aws/*`, one module per logical
@@ -10,20 +10,76 @@ design.
 
 ## The isolated runner
 
-- The worker never runs OpenTofu in its own process. Every `tofu` command runs in a **throwaway
-  container**: the pinned `ghcr.io/opentofu/opentofu:1.13.2` image, or the `tofu-runner` image with
-  the modules baked in.
+- The worker never runs OpenTofu in its own process. OpenTofu runs in a **throwaway runner**: the
+  pinned `ghcr.io/opentofu/opentofu:1.13.2` image, or the `tofu-runner` image with the modules
+  baked in.
 - The module library is mounted read only, or baked into the image. Providers come from a plugin
-  cache volume that all runners share.
-- Credentials reach **that one container only**, as environment variables. They never appear in
-  files, command lines or state.
-- Each command has a hard timeout (`TOFU_TIMEOUT_MINUTES`, 45 by default) and can be cancelled.
+  cache that all runners share.
+- Credentials reach **that one runner only**. They never appear in command lines, task or Job
+  definitions, or state.
+- Each run has a hard timeout (`TOFU_TIMEOUT_MINUTES`, 45 by default) and can be cancelled.
 
-<Callout type="warn" title="Planned before production">
-  Today the worker starts runners through the Docker socket, which gives it control of the host's
-  Docker daemon. A runner that uses ECS RunTask or a Kubernetes Job with a scoped role is on the
-  roadmap.
-</Callout>
+## Where the runner runs
+
+`TOFU_RUNNER` chooses how the worker starts runners
+([ADR 0016](/docs/contributing/architecture-decisions/#0016-opentofu-runs-on-docker-ecs-or-kubernetes)).
+
+| `TOFU_RUNNER` | Runner | What the worker needs |
+|---|---|---|
+| `docker` (default) | A container per command on the worker's Docker host | The Docker socket, which gives it control of that host. Run it on a host used only by OrkStage. |
+| `ecs` | One ECS task per operation | `ecs:RunTask`, `ecs:DescribeTasks`, `ecs:StopTask` and `iam:PassRole` on the runner's execution role. No socket. |
+| `kubernetes` | One Job per operation | `create`, `get` and `delete` on Jobs and `list` on pods in its namespace. No socket. |
+
+With `ecs` and `kubernetes`, one operation (an apply, a plan, a drift scan, a destroy) runs `init`,
+`validate` and its commands in a single task or Job, so it waits for one start, not four. The
+worker and the runner share the work directory through a volume, and the runner image must carry
+the modules (`TOFU_MODULES_IN_IMAGE=true`). Credentials travel in a file on that volume that only
+the runner's user can read and that the runner deletes before OpenTofu starts: they are never in
+the RunTask call (which CloudTrail records) or the Job manifest. The runner runs as the worker's
+user (10001 in the platform image) with a read only root file system.
+
+### ECS
+
+1. Create an EFS file system with an access point for user and group `10001`, encrypted in transit.
+   Mount it in the worker task at `TOFU_WORK_DIR` (for example `/var/lib/orkstage/tofu`).
+2. Register the runner task definition from
+   [`infra/aws/orkstage-tofu-runner-task.json`](https://github.com/orkstage/orkstage/blob/main/infra/aws/orkstage-tofu-runner-task.json):
+   the runner image, `entryPoint: ["/bin/sh", "-c"]`, user `10001:10001`, the EFS volume at
+   `/workspace` and no task role (the runner needs no AWS permissions of its own).
+3. Add [`infra/aws/orkstage-tofu-runner-policy.json`](https://github.com/orkstage/orkstage/blob/main/infra/aws/orkstage-tofu-runner-policy.json)
+   to the worker's task role.
+4. Configure the worker:
+
+```bash
+TOFU_RUNNER=ecs
+TOFU_IMAGE=ghcr.io/orkstage/tofu-runner:<version>   # informative; the task definition names the image
+TOFU_MODULES_IN_IMAGE=true
+TOFU_WORK_DIR=/var/lib/orkstage/tofu
+TOFU_ECS_CLUSTER=orkstage
+TOFU_ECS_TASK_DEFINITION=orkstage-tofu
+TOFU_ECS_SUBNETS=subnet-0abc,subnet-0def          # private subnets with a route to the clouds
+TOFU_ECS_SECURITY_GROUPS=sg-0123                  # egress only
+```
+
+### Kubernetes
+
+1. Apply [`infra/kubernetes/tofu-runner.yaml`](https://github.com/orkstage/orkstage/blob/main/infra/kubernetes/tofu-runner.yaml):
+   the worker's service account, a role limited to Jobs and pods in its namespace, and a
+   ReadWriteMany claim (EFS, Azure Files, Filestore, NFS) for the work directory.
+2. Run the worker with that service account and the claim mounted at `TOFU_WORK_DIR`.
+3. Configure the worker:
+
+```bash
+TOFU_RUNNER=kubernetes
+TOFU_IMAGE=ghcr.io/orkstage/tofu-runner:<version>
+TOFU_MODULES_IN_IMAGE=true
+TOFU_WORK_DIR=/var/lib/orkstage/tofu
+TOFU_K8S_WORK_CLAIM=orkstage-tofu-work
+```
+
+Each Job runs as the worker's user without a service account token, privilege escalation or
+capabilities, with `backoffLimit: 0` and a deadline of `TOFU_TIMEOUT_MINUTES`; the worker deletes
+it when the run ends or is cancelled. A runner image that cannot be pulled fails the run at once.
 
 ## One state per resource
 

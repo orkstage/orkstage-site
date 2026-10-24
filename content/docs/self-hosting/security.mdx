@@ -30,7 +30,8 @@ description: Security controls built into OrkStage, a hardening checklist for ho
 - [ ] TLS in front of the console and the API, with `WEB_PUBLIC_URL` and `API_PUBLIC_URL` on
       `https://`.
 - [ ] Postgres and Redis on private networks, with authentication and encryption in transit.
-- [ ] The worker on a dedicated host (it holds the Docker socket), with an IAM identity limited to
+- [ ] The runner without the Docker socket (`TOFU_RUNNER=ecs` or `kubernetes`), or, with
+      `TOFU_RUNNER=docker`, the worker on a dedicated host. The worker's IAM identity limited to
       `sts:AssumeRole` on your `orkstage-deploy` roles and `secretsmanager:GetSecretValue` on the
       referenced secrets.
 - [ ] One AWS account per environment, with deployment roles created from the provided
@@ -42,10 +43,8 @@ description: Security controls built into OrkStage, a hardening checklist for ho
 
 ## Known gaps
 
-- MFA policy, and a console page that lists and revokes sessions.
-- Container image scanning in CI (the dependency audit already blocks merges on high severity advisories).
+- MFA, SAML and SCIM are Enterprise features; with OIDC, your identity provider enforces MFA.
 - Postgres row level security as an extra isolation layer.
-- An OpenTofu runner that does not need the Docker socket (ECS RunTask or a Kubernetes Job).
 
 ## Reporting a vulnerability
 

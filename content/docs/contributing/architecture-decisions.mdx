@@ -1,6 +1,6 @@
 ---
 title: Architecture decisions
-description: The six accepted OrkStage ADRs in brief. Placement slots, provider adapters, BullMQ workflows, tenancy, OpenTofu state and the toolchain.
+description: The OrkStage architecture decision records in brief, from placement slots and provider adapters to authentication, observability, status pages and the OpenTofu runner.
 ---
 
 Architecture decision records (ADRs) live in `docs/adr/` of the platform repository. Each summary
@@ -86,6 +86,84 @@ and a size profile (`spec.plans` and `metadata.profile` are ignored with a warni
 release). Named profiles of accounts and regions per environment replace the default cloud
 targets: new instances bind the slots they leave unbound from a profile.
 [Read ADR 0007](https://github.com/orkstage/orkstage/blob/main/docs/adr/0007-profiles-limits-tags.md)
+
+## 0008 A real shared network per cloud target for sandbox instances
+
+**Accepted, not built yet.**
+
+Templates that ask for `network.strategy: shared` will use one platform owned network per cloud
+target and region instead of a network and NAT gateway per instance. Isolation comes from per
+instance security groups that deny by default; production instances can never use it.
+[Read ADR 0008](https://github.com/orkstage/orkstage/blob/main/docs/adr/0008-shared-sandbox-network.md)
+
+## 0009 Provider actions from one catalog
+
+**Accepted.**
+
+Operations people run on live resources (scale, restart, snapshot, invalidate a cache) come from
+one catalog with parameters, risk and the role each needs. Adapters declare which ones they
+support, and triggers and future agents use the same vocabulary.
+[Read ADR 0009](https://github.com/orkstage/orkstage/blob/main/docs/adr/0009-provider-actions.md)
+
+## 0010 Prices from provider pricing APIs, with bundled tables per region
+
+**Accepted.**
+
+Cost estimates use the provider's pricing API when the target can read it, and a bundled price table
+per region otherwise. Each line says which source it used and whether a price was derived.
+[Read ADR 0010](https://github.com/orkstage/orkstage/blob/main/docs/adr/0010-regional-pricing.md)
+
+## 0011 Authentication, single sign on and API keys
+
+**Accepted.**
+
+No passwords: OIDC providers and GitHub, accounts linked by verified email only, opaque server side
+sessions with an idle timeout, and API keys that act for their creator with a role, scopes and an
+expiry. SAML, SCIM and MFA policies are Enterprise features.
+[Read ADR 0011](https://github.com/orkstage/orkstage/blob/main/docs/adr/0011-authentication-and-sso.md)
+
+## 0012 Observability of the control plane
+
+**Accepted.**
+
+JSON logs with a correlation id from the request to the OpenTofu run, OpenTelemetry traces and
+metrics when an OTLP endpoint is set, health endpoints for orchestrators, and an audit log that
+does not depend on the log pipeline.
+[Read ADR 0012](https://github.com/orkstage/orkstage/blob/main/docs/adr/0012-observability.md)
+
+## 0013 Health roll up, incidents and status pages
+
+**Accepted.**
+
+Resource health rolls up by criticality into customer facing components; rules open one incident
+per failure and resolve it on recovery; status pages are private, for members or public, and show
+names and states only.
+[Read ADR 0013](https://github.com/orkstage/orkstage/blob/main/docs/adr/0013-status-pages-and-incidents.md)
+
+## 0014 Sandbox instances without plans
+
+**Accepted.**
+
+A sandbox is a non production template, the `sandbox` environment and tenant limits, not a plan.
+Non production templates never reach production.
+[Read ADR 0014](https://github.com/orkstage/orkstage/blob/main/docs/adr/0014-sandbox-instances.md)
+
+## 0015 AI mini agents attached to templates
+
+**Proposed, not built.**
+
+Small, read only agents a template opts into, run on the plan and after the deployment with the
+tenant's own model provider. They return findings and suggest catalog actions; people decide.
+[Read ADR 0015](https://github.com/orkstage/orkstage/blob/main/docs/adr/0015-ai-mini-agents.md)
+
+## 0016 OpenTofu runs on Docker, ECS or Kubernetes
+
+**Accepted.**
+
+The worker starts OpenTofu through an executor: containers on its Docker host, ECS tasks or
+Kubernetes Jobs, the last two without the Docker socket. Credentials reach the runner through a
+file it deletes on read, never through a task or Job definition.
+[Read ADR 0016](https://github.com/orkstage/orkstage/blob/main/docs/adr/0016-runner-executors.md)
 
 ## Writing a new ADR
 
