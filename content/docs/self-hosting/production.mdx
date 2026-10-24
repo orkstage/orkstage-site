@@ -17,7 +17,8 @@ image (Control API, worker, migrations and console) and the OpenTofu runner imag
 
 - A Linux host with Docker Engine and Compose v2, 2 vCPU and 4 GB of memory at least, used only by
   OrkStage: the worker starts OpenTofu containers through the Docker socket, which gives it control
-  of the host's Docker.
+  of the host's Docker. On ECS or Kubernetes the worker can start runners as tasks or Jobs instead,
+  without the socket (see [OpenTofu runner](/docs/self-hosting/opentofu#where-the-runner-runs)).
 - A host name that points to it, with ports 80 and 443 open (Caddy gets the certificate from
   Let's Encrypt).
 - An OIDC provider for sign in, such as Microsoft Entra ID, Google or Keycloak. Production has no
