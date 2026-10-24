@@ -98,6 +98,8 @@ devices out under **Your sessions** in the account menu.
 | `DEPLOY_LIMIT_PER_TENANT` | integer, `0` for no limit | `5` | Deployments of one tenant running at once, across all workers. Others wait in the queue. |
 | `DEPLOY_LIMIT_PER_PROVIDER_REGION` | integer, `0` for no limit | `20` | Deployments touching one provider region at once, across all workers. Each cloud target also has its own limit. |
 | `HEALTH_CHECK_INTERVAL_SECONDS` | integer, at least 10 | `30` | Interval between health monitor ticks. |
+| `NOTIFICATION_RETENTION_DAYS` | integer from 7 to 3650 | `90` | Notifications and notification and webhook deliveries older than this are deleted (hourly). Pending deliveries stay. |
+| `DEPLOYMENT_EVENT_RETENTION_DAYS` | integer from 0 to 3650 | `365` | Deployment event logs older than this are deleted (hourly); `0` keeps them forever. Expired sessions and invitations go 30 days after they end; the audit log is never pruned. |
 | `DRIFT_CHECK_INTERVAL_MINUTES` | integer, at least 0 | `360` | Interval between drift scans on real providers (one OpenTofu plan per applied resource). `0` turns scans off. |
 | `DNS_RESOLVERS` | comma separated addresses | system resolver | DNS servers the worker asks when it verifies [custom domains](/docs/user-guide/custom-domains), for example `1.1.1.1,8.8.8.8`. Set it when the system resolver is private and could hide the records customers create. |
 | `TOFU_RUNNER` | `docker`, `ecs` or `kubernetes` | `docker` | Where OpenTofu runs: containers through the Docker socket, ECS tasks or Kubernetes Jobs. See [OpenTofu runner](/docs/self-hosting/opentofu#where-the-runner-runs). |
