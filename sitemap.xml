@@ -20,7 +20,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/contributing/architecture-decisions/</loc>
-<lastmod>2026-10-17T00:20:21.000Z</lastmod>
+<lastmod>2026-10-24T02:38:15.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -752,7 +752,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/get-started/roadmap/</loc>
-<lastmod>2026-10-18T16:16:29.000Z</lastmod>
+<lastmod>2026-10-24T02:38:15.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -854,7 +854,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/configuration/</loc>
-<lastmod>2026-10-23T10:15:11.000Z</lastmod>
+<lastmod>2026-10-24T02:38:15.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -884,13 +884,13 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/opentofu/</loc>
-<lastmod>2026-10-23T10:15:11.000Z</lastmod>
+<lastmod>2026-10-24T02:38:15.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/production/</loc>
-<lastmod>2026-10-17T01:18:04.000Z</lastmod>
+<lastmod>2026-10-24T02:38:15.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -902,7 +902,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/security/</loc>
-<lastmod>2026-10-23T21:29:00.000Z</lastmod>
+<lastmod>2026-10-24T02:38:15.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
