@@ -12,9 +12,9 @@ finer governance, compliance exports, several organizations and support with an 
 
 ## How it works
 
-- **One codebase, one build.** The Enterprise source lives in a private repository that the
-  official images are built with. There is no separate fork: a build from the public source is the
-  Community edition.
+- **One codebase, two images.** The public images are the Community edition. The Enterprise
+  source lives in a private repository, and subscribers get an image built from the same source
+  with it, distributed privately. There is no separate fork.
 - **A license key turns it on.** Set `ORKSTAGE_LICENSE_KEY` to the key you receive. The key is a
   signed token (Ed25519) that OrkStage verifies **offline**. OrkStage does not contact a license
   server and does not require usage reports.
