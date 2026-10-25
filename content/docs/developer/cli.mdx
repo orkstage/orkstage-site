@@ -16,7 +16,7 @@ Serverless, Bicep and ARM projects. The CLI is written in Rust and licensed unde
 
 ## Install
 
-<Tabs items={['Install script', 'From source', 'Docker']}>
+<Tabs items={['Install script', 'crates.io', 'From source', 'Docker']}>
 <Tab value="Install script">
 
 The scripts download the latest release for your machine, verify it against the release's
@@ -33,6 +33,21 @@ irm https://orkstage.io/install.ps1 | iex          # installs to %LOCALAPPDATA%\
 Pin a version with `ORK_VERSION=0.1.0`, or choose the directory with `ORK_INSTALL_DIR`. Every
 release on [GitHub](https://github.com/orkstage/orkstage-cli/releases) also has the archives and
 `SHA256SUMS` for a manual install.
+
+Until the first stable release the scripts install the newest prerelease, and its binaries are not
+code signed yet: Windows SmartScreen and macOS Gatekeeper may warn before the first run.
+
+</Tab>
+<Tab value="crates.io">
+
+With Rust 1.88 or newer, install the `orkstage-cli` crate; the binary is `ork`:
+
+```bash
+cargo install orkstage-cli --locked
+ork --version
+```
+
+The scan engine is published as its own crate, [`orkstage-scan`](https://crates.io/crates/orkstage-scan).
 
 </Tab>
 <Tab value="From source">
