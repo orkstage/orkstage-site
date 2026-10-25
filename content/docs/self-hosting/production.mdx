@@ -47,7 +47,7 @@ cp .env.example .env
 
 | Setting | Value |
 |---|---|
-| `ORKSTAGE_VERSION` | The release to run, for example `0.1.0`. |
+| `ORKSTAGE_VERSION` | The release to run: an image tag from the [platform package](https://github.com/orgs/orkstage/packages/container/package/platform), today `0.1.0-rc.2` (a prerelease). |
 | `ORKSTAGE_DOMAIN` | The host name, for example `orkstage.example.com`. |
 | `POSTGRES_PASSWORD` | Letters and digits, for the bundled Postgres. |
 | `SESSION_SECRET`, `ENCRYPTION_KEY` | `openssl rand -base64 32` for each. Keep a copy of the encryption key with your backups. |
