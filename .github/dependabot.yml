@@ -2,6 +2,7 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /
+    target-branch: staging
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -23,6 +24,7 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    target-branch: staging
     schedule:
       interval: weekly
     groups:
@@ -33,6 +35,7 @@ updates:
   # AWS provider of the hosting configuration.
   - package-ecosystem: terraform
     directory: /infra
+    target-branch: staging
     schedule:
       interval: weekly
     groups:

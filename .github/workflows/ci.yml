@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
   # Daily rebuild: the static export carries the GitHub star count of its build (lib/github.ts), so
   # this refreshes it; the publish job deploys only when the exported site changed.
