@@ -38,13 +38,13 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/contributing/release-process/</loc>
-<lastmod>2026-10-16T21:00:11.000Z</lastmod>
+<lastmod>2026-11-28T10:16:55.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
 <url>
 <loc>https://orkstage.io/docs/contributing/repository-map/</loc>
-<lastmod>2026-10-16T23:30:16.000Z</lastmod>
+<lastmod>2026-11-28T10:16:55.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -902,7 +902,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/developer/ci-cd/</loc>
-<lastmod>2026-10-18T16:16:29.000Z</lastmod>
+<lastmod>2026-11-28T10:16:55.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -914,7 +914,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/developer/import/</loc>
-<lastmod>2026-10-16T23:30:16.000Z</lastmod>
+<lastmod>2026-11-28T10:16:55.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
@@ -1106,7 +1106,7 @@
 </url>
 <url>
 <loc>https://orkstage.io/docs/self-hosting/docker-compose/</loc>
-<lastmod>2026-10-17T01:18:04.000Z</lastmod>
+<lastmod>2026-11-28T10:16:55.000Z</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.7</priority>
 </url>
