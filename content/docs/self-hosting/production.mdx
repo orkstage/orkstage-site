@@ -102,8 +102,8 @@ Every image is signed with cosign (keyless, from the release workflow) and carri
 build provenance:
 
 ```bash
-cosign verify ghcr.io/orkstage/platform:0.1.0 \
+cosign verify ghcr.io/orkstage/platform:0.1.0-rc.2 \
   --certificate-identity-regexp '^https://github.com/orkstage/orkstage-dev/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
-docker buildx imagetools inspect ghcr.io/orkstage/platform:0.1.0 --format '{{ json .SBOM }}'
+docker buildx imagetools inspect ghcr.io/orkstage/platform:0.1.0-rc.2 --format '{{ json .SBOM }}'
 ```
