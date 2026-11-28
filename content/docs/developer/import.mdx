@@ -149,7 +149,7 @@ interface DetectedResource {
 ## Using the engine in Node.js
 
 The WebAssembly build is packaged as `@orkstage/scan`. You build it from the `cli/` folder with
-`scripts/build-wasm.sh`. It is not published to a registry yet.
+`scripts/build-wasm.sh`. It is not on npm yet; the Rust engine is on crates.io as `orkstage-scan`.
 
 ```js
 const { scanFiles, version } = require('@orkstage/scan');

@@ -146,8 +146,8 @@ deploy step.
     ork deploy --instance shop-staging --wait   # non-zero exit if the deployment fails
 ```
 
-There are no released `ork` binaries yet. Build the CLI in an earlier step, or use a container image
-you build from source. `ork template push` needs an organization key, as described in
+Install the CLI in an earlier step with the install script (`curl -fsSL https://orkstage.io/install.sh | sh`,
+pinned with `ORK_VERSION`) or `cargo install orkstage-cli --locked`. `ork template push` needs an organization key, as described in
 [API keys](/docs/developer/api-keys/). See [the ork CLI](/docs/developer/cli/) for the rest.
 
 </Tab>

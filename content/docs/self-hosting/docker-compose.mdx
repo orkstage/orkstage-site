@@ -117,6 +117,7 @@ host. A runner based on ECS RunTask or Kubernetes Jobs is on the roadmap.
 </Step>
 </Steps>
 
-Published images (`ghcr.io/orkstage/platform`, `ghcr.io/orkstage/console`,
-`ghcr.io/orkstage/tofu-runner`) are planned, and so is infrastructure code that runs the control plane
-itself on AWS (ECS Fargate, RDS, ElastiCache, ALB). Today you build the images from source.
+This stack builds the images from source for development. To run released images (`ghcr.io/orkstage/platform`
+and `ghcr.io/orkstage/tofu-runner`, `0.1.0-rc.2` today), follow [Production](/docs/self-hosting/production/).
+Infrastructure code that runs the control plane itself on AWS (ECS Fargate, RDS, ElastiCache, ALB)
+is planned.
