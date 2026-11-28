@@ -78,7 +78,8 @@ export default async function DocPage(props: { params: Promise<Params> }) {
           components={getMDXComponents({
             a: createRelativeLink(source, page),
             ...(preloaded
-              ? { OpenAPIPage: (p: Omit<ComponentProps<typeof OpenAPIPage>, 'preloaded'>) => <OpenAPIPage {...(p as ComponentProps<typeof OpenAPIPage>)} {...preloaded} /> }
+              ? // biome-ignore lint/correctness/noComponentHookFactories: the MDX component needs this page's preloaded API document; a server component rendered once per request.
+                { OpenAPIPage: (p: Omit<ComponentProps<typeof OpenAPIPage>, 'preloaded'>) => <OpenAPIPage {...(p as ComponentProps<typeof OpenAPIPage>)} {...preloaded} /> }
               : {}),
           })}
         />
